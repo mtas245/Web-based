@@ -3,3 +3,9 @@ __pycache__/
 *.db
 uploads/
 .env
+
+# Local virtual environments and test artifacts
+.venv/
+venv/
+.pytest_cache/
+.coverage
