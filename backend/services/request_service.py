@@ -198,6 +198,8 @@ def reject_application(application_id: int, db: Session) -> Application:
     app = db.get(Application, application_id)
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
+    if app.status != ApplicationStatus.PENDING:
+        raise HTTPException(status_code=409, detail="Only pending applications can be rejected")
     app.status = ApplicationStatus.REJECTED
     db.add(app)
     db.commit()
