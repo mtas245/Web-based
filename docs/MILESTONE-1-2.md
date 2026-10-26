@@ -136,3 +136,8 @@ The script prompts for an email, name and password, securely hides the password 
 In Swagger UI use `POST /api/v1/auth/login` with the admin email entered as **username** and the newly chosen password as **password**. Then authorize using the returned JWT. Do not paste passwords or JWT tokens into GitHub, chat, screenshots or documentation.
 
 This is a local-development convenience only, not production user provisioning. The existing hard-coded JWT signing secret in `backend/core/security.py` still needs to be replaced by secure environment configuration before final submission.
+
+
+## Local admin hashing dependency fix
+
+If `python scripts/create_local_admin.py` fails with `AttributeError: module 'bcrypt' has no attribute '__about__'` or bcrypt's 72-byte-password ValueError inside Passlib initialization, the previously unpinned bcrypt dependency is incompatible with passlib 1.7.4. `backend/requirements.txt` now pins `bcrypt==4.0.1`. In an activated virtual environment run `python -m pip install -r requirements.txt` and verify `python -m pip show bcrypt` reports 4.0.1. Retry local admin setup. The script now refuses passwords longer than 72 UTF-8 bytes. Do not commit credentials or JWTs.
