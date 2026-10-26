@@ -1,5 +1,5 @@
 """OpenAPI request/response contracts for substitute-request CRUD."""
-from datetime import date, datetime
+from datetime import date as DateType, datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -29,7 +29,7 @@ def validate_time_slot(value: Optional[str]) -> Optional[str]:
 
 
 class RequestCreate(BaseModel):
-    date: date = Field(description="Date of the lesson; today or later")
+    date: DateType = Field(description="Date of the lesson; today or later")
     grade_level: str = Field(examples=["3a"])
     subject_id: int = Field(gt=0, examples=[1])
     time_slot: Optional[str] = Field(default=None, examples=["08:00-10:00"])
@@ -42,8 +42,8 @@ class RequestCreate(BaseModel):
 
     @field_validator("date")
     @classmethod
-    def check_date(cls, value: date) -> date:
-        if value < date.today():
+    def check_date(cls, value: DateType) -> DateType:
+        if value < DateType.today():
             raise ValueError("Request date must not be in the past")
         return value
 
@@ -54,7 +54,7 @@ class RequestCreate(BaseModel):
 
 
 class RequestUpdate(BaseModel):
-    date: Optional[date] = None
+    date: Optional[DateType] = None
     grade_level: Optional[str] = None
     subject_id: Optional[int] = Field(default=None, gt=0)
     time_slot: Optional[str] = None
@@ -67,8 +67,8 @@ class RequestUpdate(BaseModel):
 
     @field_validator("date")
     @classmethod
-    def check_date(cls, value: Optional[date]) -> Optional[date]:
-        if value is not None and value < date.today():
+    def check_date(cls, value: Optional[DateType]) -> Optional[DateType]:
+        if value is not None and value < DateType.today():
             raise ValueError("Request date must not be in the past")
         return value
 
@@ -81,7 +81,7 @@ class RequestUpdate(BaseModel):
 class RequestRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
-    date: date
+    date: DateType
     grade_level: str
     subject_id: int
     time_slot: Optional[str]
