@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List, TYPE_CHECKING
-from datetime import date, datetime
+from datetime import date as DateType, datetime
 from enum import Enum
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ class RequestStatus(str, Enum):
 
 class SubstituteRequest(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    date: date
+    date: DateType
     grade_level: str
     subject_id: int = Field(foreign_key="subject.id")
     time_slot: Optional[str] = None   # format: "HH:MM-HH:MM"
