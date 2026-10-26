@@ -118,3 +118,21 @@ python -m pytest -q
 ```
 
 If PowerShell blocks activation, directly run `.\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt` and `.\\.venv\\Scripts\\python.exe -m pytest -q`, without activation. Record the actual interpreter and test outcomes; the repository has not yet been confirmed passing.
+
+
+## Local demo administrator
+
+The current FastAPI startup creates database tables but does not seed an administrator. Public `/auth/register` creates a teacher role, not an admin.
+
+A development-only bootstrap script is available at `backend/scripts/create_local_admin.py`. From `backend/`, after activating the Python virtual environment:
+
+```powershell
+git pull origin feature/milestone1-2
+python scripts/create_local_admin.py
+```
+
+The script prompts for an email, name and password, securely hides the password input, hashes it with the application's normal password hashing utility, and stores the new account in the local ignored SQLite database. It refuses to overwrite an existing account with the same email and requires a password of at least 12 characters.
+
+In Swagger UI use `POST /api/v1/auth/login` with the admin email entered as **username** and the newly chosen password as **password**. Then authorize using the returned JWT. Do not paste passwords or JWT tokens into GitHub, chat, screenshots or documentation.
+
+This is a local-development convenience only, not production user provisioning. The existing hard-coded JWT signing secret in `backend/core/security.py` still needs to be replaced by secure environment configuration before final submission.
