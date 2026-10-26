@@ -55,6 +55,9 @@ def main():
         if len(password) < 12 or password != confirm:
             print("Passwords must match and contain at least 12 characters.")
             sys.exit(1)
+        if len(password.encode("utf-8")) > 72:
+            print("Bcrypt passwords must be at most 72 UTF-8 bytes. Choose a shorter password.")
+            sys.exit(1)
 
         admin = User(
             full_name=name,
