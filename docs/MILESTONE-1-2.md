@@ -79,3 +79,23 @@ Automated tests added in `tests/test_request_contracts.py` check accepted/reject
 ## Next milestone evidence to collect
 
 Capture a successful POST and GET, one invalid POST, one forbidden request, and pytest output. Update this file and the root README with actual evidence and the team decisions before submission.
+
+
+## Milestone 2 — workflow hardening (26 October 2026)
+
+Committed integration tests: `backend/tests/test_request_workflow.py` exercises:
+- POST → GET → PATCH → DELETE substitute request with SQLite persistence.
+- HTTP 422 for invalid dates and HTTP 400 for missing subjects.
+- Two teachers applying to one request, duplicate application rejection, approving one application, automatically rejecting the other.
+- HTTP 409 when trying to approve a rejected application, edit an already filled request, or reject a non-pending application.
+- Teacher open-request listing excludes expired assignments; non-approved teachers must not use teacher-only API operations.
+
+Implementation adjustments:
+- `request_service.approve_application` prevents a second approval after an assignment is filled.
+- `request_service.reject_application` now requires a pending application.
+- `require_teacher` checks both teacher role and approved account status.
+- The optional grade filter applies to the already active/open request set instead of returning expired results.
+
+**Execution status: NOT VERIFIED.** Code and test files are committed, but tests have not yet been executed in a runtime with project dependencies. The provided integration test overrides role dependencies to test the business workflow and does **not** establish full JWT/security correctness. Run `cd backend && python -m pytest -q` and capture actual results. Review failures before treating this milestone as complete.
+
+Outstanding before milestone 2 sign-off: run tests; capture screenshots or command output for positive/negative API calls; review the full OpenAPI specification; complete team responsibility and coaching decisions. Production race-safety under concurrent approvals is not proven.
