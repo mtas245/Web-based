@@ -53,10 +53,11 @@ def setup_api():
     app.dependency_overrides[require_admin] = admin_role
     app.dependency_overrides[require_teacher] = teacher_role
     try:
-        with TestClient(app) as client:
-            yield client, engine, subject_id, current_teacher, teacher2_id
+        client = TestClient(app)
+        yield client, engine, subject_id, current_teacher, teacher2_id
     finally:
         app.dependency_overrides.clear()
+        client.close()
         engine.dispose()
 
 
