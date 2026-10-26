@@ -141,3 +141,30 @@ This is a local-development convenience only, not production user provisioning. 
 ## Local admin hashing dependency fix
 
 If `python scripts/create_local_admin.py` fails with `AttributeError: module 'bcrypt' has no attribute '__about__'` or bcrypt's 72-byte-password ValueError inside Passlib initialization, the previously unpinned bcrypt dependency is incompatible with passlib 1.7.4. `backend/requirements.txt` now pins `bcrypt==4.0.1`. In an activated virtual environment run `python -m pip install -r requirements.txt` and verify `python -m pip show bcrypt` reports 4.0.1. Retry local admin setup. The script now refuses passwords longer than 72 UTF-8 bytes. Do not commit credentials or JWTs.
+
+
+## Manual Swagger evidence — user-confirmed (26 October 2026)
+
+The following HTTP status codes were reported by a team member after executing the requests against a locally running FastAPI server in Swagger UI (`/docs`). These are **manual user-reported results**, not independently executed or verified by the GitHub editing assistant; actual response bodies and screenshots have not been archived.
+
+| API request / scenario | Reported HTTP status | Outcome |
+| --- | --- | --- |
+| GET `/api/v1/requests/grade-levels` (public) | 200 | Expected |
+| GET `/api/v1/requests/` (unauthenticated) | 401 | Expected authentication protection |
+| POST `/api/v1/auth/login` (local admin) | 200 | Expected |
+| GET `/api/v1/requests/` (authorized admin) | 200 | Expected admin access |
+| POST `/api/v1/subjects/seed` | 200 | Expected subject seeding |
+| GET `/api/v1/subjects/` | 200 | Expected subject listing |
+| POST `/api/v1/requests/` (valid JSON, existing subject) | 201 | Expected creation |
+| GET `/api/v1/requests/{request_id}` (created record) | 200 | Expected retrieval |
+| PATCH `/api/v1/requests/{request_id}` (update time/note) | 200 | Expected update |
+| POST `/api/v1/requests/` (invalid grade, subject_id <= 0, inverted slot) | 422 | Expected schema rejection |
+| POST `/api/v1/requests/` (nonexistent subject) | 400 | Expected business-rule rejection |
+| DELETE `/api/v1/requests/{request_id}` (open record, no applications) | 204 | Expected deletion |
+| GET `/api/v1/requests/{request_id}` (after deletion) | 404 | Expected not found |
+
+Together these user-confirmed results demonstrate a manual REST CRUD happy path, invalid-input handling, admin authentication, protected-resource access and API-backed SQLite persistence. The test results **do not** by themselves confirm the entire teacher registration/application/approval journey, frontend integration, concurrency safety, or comprehensive authorization testing.
+
+**Automated pytest execution:** A previous developer reported that collection errors were resolved, but the number of tests passed and final pytest output have not been provided. Earlier "not verified" notes in this document refer to automated test execution and the assistant's own runtime; do not read them as contradicting these subsequent manually confirmed Swagger results.
+
+**Next verification:** Test teacher registration (`POST /api/v1/auth/register`, multipart form), unauthorised/pending-teacher login (`403`), administrator approval (`PATCH /api/v1/teachers/{teacher_id}/approve`), teacher login and request application (`POST /api/v1/requests/{request_id}/apply`), administrator application approval (`PATCH /api/v1/applications/{application_id}/approve`). Create a new open request for this demonstration, since the first manual CRUD test deleted its request. Capture screenshots/redacted responses plus final pytest summary and record actual team contributions.
