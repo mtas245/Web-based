@@ -39,4 +39,6 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
 def require_teacher(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != Role.TEACHER:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Teacher access required")
+    if not current_user.is_approved:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Teacher approval required")
     return current_user
