@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 from models.request import SubstituteRequest, RequestStatus, GRADE_LEVELS
 from models.application import Application, ApplicationStatus
 from models.user import User
+from models.subject import Subject
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -41,6 +42,9 @@ def create_request(
 ) -> SubstituteRequest:
     if grade_level not in GRADE_LEVELS:
         raise HTTPException(status_code=400, detail=f"Invalid grade level: {grade_level}")
+
+    if not db.get(Subject, subject_id):
+        raise HTTPException(status_code=400, detail="Subject does not exist")
 
     expires_at = _calculate_expires_at(date, time_slot)
 
@@ -89,6 +93,10 @@ def delete_request(request_id: int, db: Session) -> None:
     req = db.get(SubstituteRequest, request_id)
     if not req:
         raise HTTPException(status_code=404, detail="Request not found")
+    if req.status != RequestStatus.OPEN:
+        raise HTTPException(status_code=409, detail="Only open requests may be deleted")
+    if db.exec(select(Application).where(Application.request_id == request_id)).first():
+        raise HTTPException(status_code=409, detail="Requests with applications cannot be deleted")
     db.delete(req)
     db.commit()
 
@@ -97,6 +105,8 @@ def close_request(request_id: int, db: Session) -> SubstituteRequest:
     req = db.get(SubstituteRequest, request_id)
     if not req:
         raise HTTPException(status_code=404, detail="Request not found")
+    if req.status != RequestStatus.OPEN:
+        raise HTTPException(status_code=409, detail="Only open requests may be closed")
     req.status = RequestStatus.CLOSED
     db.add(req)
     db.commit()
@@ -156,10 +166,13 @@ def approve_application(application_id: int, db: Session) -> Application:
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
 
+    # Status transitions are guarded so a request cannot receive two approvals.
+    req = db.get(SubstituteRequest, app.request_id)
+    if not req or req.status != RequestStatus.OPEN or app.status != ApplicationStatus.PENDING:
+        raise HTTPException(status_code=409, detail="Application or request is no longer pending/open")
     app.status = ApplicationStatus.APPROVED
 
     # Mark request as filled
-    req = db.get(SubstituteRequest, app.request_id)
     if req:
         req.status = RequestStatus.FILLED
         db.add(req)
@@ -204,3 +217,33 @@ def get_applications_for_teacher(teacher_id: int, db: Session) -> List[Applicati
     return db.exec(
         select(Application).where(Application.teacher_id == teacher_id)
     ).all()
+
+
+def get_request(request_id: int, db: Session) -> SubstituteRequest:
+    """Get a request for the authenticated admin; fail with HTTP 404."""
+    req = db.get(SubstituteRequest, request_id)
+    if req is None:
+        raise HTTPException(status_code=404, detail="Request not found")
+    return req
+
+
+def update_request(request_id: int, updates: dict, db: Session) -> SubstituteRequest:
+    """Apply validated partial edits to an OPEN request."""
+    req = get_request(request_id, db)
+    if req.status != RequestStatus.OPEN:
+        raise HTTPException(status_code=409, detail="Only open requests may be edited")
+    if "subject_id" in updates:
+        if updates["subject_id"] is None or not db.get(Subject, updates["subject_id"]):
+            raise HTTPException(status_code=400, detail="Subject does not exist")
+    if "grade_level" in updates and updates["grade_level"] not in GRADE_LEVELS:
+        raise HTTPException(status_code=400, detail="Invalid grade level")
+    for name in ("date", "grade_level", "subject_id", "time_slot", "note"):
+        if name in updates:
+            if updates[name] is None and name in ("date", "grade_level", "subject_id"):
+                raise HTTPException(status_code=422, detail=f"{name} must not be null")
+            setattr(req, name, updates[name])
+    req.expires_at = _calculate_expires_at(req.date, req.time_slot)
+    db.add(req)
+    db.commit()
+    db.refresh(req)
+    return req
