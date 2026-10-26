@@ -99,3 +99,22 @@ Implementation adjustments:
 **Execution status: NOT VERIFIED.** Code and test files are committed, but tests have not yet been executed in a runtime with project dependencies. The provided integration test overrides role dependencies to test the business workflow and does **not** establish full JWT/security correctness. Run `cd backend && python -m pytest -q` and capture actual results. Review failures before treating this milestone as complete.
 
 Outstanding before milestone 2 sign-off: run tests; capture screenshots or command output for positive/negative API calls; review the full OpenAPI specification; complete team responsibility and coaching decisions. Production race-safety under concurrent approvals is not proven.
+
+
+## Local environment troubleshooting
+
+The project pins SQLModel 0.0.21 and related dependencies. On Windows with Python 3.14 and Pydantic 2.12, the ORM model imports may fail before any test executes with `PydanticUserError: Field 'id' requires a type annotation`. For reproducibility, use a clean Python 3.12 virtual environment until compatibility has been verified against a newer dependency set.
+
+From PowerShell in `backend/`:
+
+```powershell
+py -0p
+py -3.12 -m venv .venv
+.\\.venv\\Scripts\\Activate.ps1
+python --version
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pytest -q
+```
+
+If PowerShell blocks activation, directly run `.\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt` and `.\\.venv\\Scripts\\python.exe -m pytest -q`, without activation. Record the actual interpreter and test outcomes; the repository has not yet been confirmed passing.
