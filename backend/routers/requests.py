@@ -1,7 +1,7 @@
 """Substitute request REST API, backed by the same services and database as other routes."""
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
 from database import get_db
@@ -47,10 +47,12 @@ def list_open_requests(
     db: Session = Depends(get_db),
 ):
     """Teacher: list currently open requests, optionally filtered by grade."""
+    reqs = request_service.get_open_requests(db)
     if grade_level:
-        reqs = request_service.get_requests_by_grade(grade_level, db)
-        return [r for r in reqs if r.status.value == "open"]
-    return request_service.get_open_requests(db)
+        if grade_level not in GRADE_LEVELS:
+            raise HTTPException(status_code=422, detail="Invalid grade_level")
+        return [r for r in reqs if r.grade_level == grade_level]
+    return reqs
 
 
 @router.get("/grade-levels", response_model=List[str])
