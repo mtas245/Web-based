@@ -1,90 +1,120 @@
-from datetime import date as DateType
+"""Substitute request REST API, backed by the same services and database as other routes."""
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
 from database import get_db
-from core.dependencies import get_current_user, require_admin, require_teacher
+from core.dependencies import require_admin, require_teacher
 from models.user import User
-from models.request import SubstituteRequest, GRADE_LEVELS
+from models.request import GRADE_LEVELS
+from schemas.request import RequestCreate, RequestRead, RequestUpdate
 from services import request_service
 
 router = APIRouter(prefix="/requests", tags=["requests"])
 
 
-# ── admin endpoints ───────────────────────────────────────────────────────────
-
-@router.get("/", response_model=List[dict])
+@router.get("/", response_model=List[RequestRead])
 def list_all_requests(
-    _admin: User = Depends(require_admin),
-    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin), db: Session = Depends(get_db)
 ):
-    """Admin: list all requests."""
-    return [_serialize(r) for r in request_service.get_all_requests(db)]
+    """Admin: list all substitute requests."""
+    return request_service.get_all_requests(db)
 
 
-@router.post("/", response_model=dict, status_code=201)
+@router.post("/", response_model=RequestRead, status_code=201, responses={
+    400: {"description": "Invalid business data, such as an unknown subject"},
+    401: {"description": "Missing or invalid bearer token"},
+    403: {"description": "Administrator role required"},
+    422: {"description": "Input schema validation failed"},
+})
 def create_request(
-    date: DateType,
-    grade_level: str,
-    subject_id: int,
-    time_slot: Optional[str] = None,
-    note: Optional[str] = None,
+    payload: RequestCreate,
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Admin: create a new substitute request."""
-    req = request_service.create_request(date, grade_level, subject_id, time_slot, note, admin.id, db)
-    return _serialize(req)
+    """Admin: create a substitute request from a documented JSON request body."""
+    return request_service.create_request(
+        payload.date, payload.grade_level, payload.subject_id,
+        payload.time_slot, payload.note, admin.id, db
+    )
 
 
-@router.delete("/{request_id}", status_code=204)
-def delete_request(
-    request_id: int,
-    _admin: User = Depends(require_admin),
-    db: Session = Depends(get_db),
-):
-    """Admin: delete a request."""
-    request_service.delete_request(request_id, db)
-
-
-@router.patch("/{request_id}/close", response_model=dict)
-def close_request(
-    request_id: int,
-    _admin: User = Depends(require_admin),
-    db: Session = Depends(get_db),
-):
-    """Admin: manually close a request."""
-    req = request_service.close_request(request_id, db)
-    return _serialize(req)
-
-
-@router.delete("/cleanup/expired", response_model=dict)
-def cleanup_expired(
-    _admin: User = Depends(require_admin),
-    db: Session = Depends(get_db),
-):
-    """Admin: delete all expired requests."""
-    count = request_service.delete_expired_requests(db)
-    return {"deleted": count}
-
-
-# ── teacher endpoints ─────────────────────────────────────────────────────────
-
-@router.get("/open", response_model=List[dict])
+@router.get("/open", response_model=List[RequestRead])
 def list_open_requests(
     grade_level: Optional[str] = None,
     _teacher: User = Depends(require_teacher),
     db: Session = Depends(get_db),
 ):
-    """Teacher: list open (non-expired) requests, optionally filtered by grade."""
+    """Teacher: list currently open requests, optionally filtered by grade."""
     if grade_level:
         reqs = request_service.get_requests_by_grade(grade_level, db)
-        reqs = [r for r in reqs if r.status.value == "open"]
-    else:
-        reqs = request_service.get_open_requests(db)
-    return [_serialize(r) for r in reqs]
+        return [r for r in reqs if r.status.value == "open"]
+    return request_service.get_open_requests(db)
+
+
+@router.get("/grade-levels", response_model=List[str])
+def grade_levels():
+    """Public: supported grade-level identifiers."""
+    return GRADE_LEVELS
+
+
+@router.delete("/cleanup/expired", response_model=dict)
+def cleanup_expired(
+    _admin: User = Depends(require_admin), db: Session = Depends(get_db)
+):
+    """Admin: remove expired open requests (legacy maintenance operation)."""
+    return {"deleted": request_service.delete_expired_requests(db)}
+
+
+@router.get("/{request_id}", response_model=RequestRead, responses={
+    404: {"description": "Request not found"},
+})
+def get_request(
+    request_id: int,
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Admin: retrieve a single substitute request."""
+    return request_service.get_request(request_id, db)
+
+
+@router.patch("/{request_id}", response_model=RequestRead, responses={
+    404: {"description": "Request not found"},
+    409: {"description": "Only open requests can be edited"},
+    422: {"description": "Invalid update"},
+})
+def update_request(
+    request_id: int,
+    payload: RequestUpdate,
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Admin: partially update an open substitute request."""
+    return request_service.update_request(request_id, payload.model_dump(exclude_unset=True), db)
+
+
+@router.delete("/{request_id}", status_code=204, responses={
+    404: {"description": "Request not found"},
+    409: {"description": "Only open requests without applications can be deleted"},
+})
+def delete_request(
+    request_id: int,
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Admin: delete an open request that has no applications."""
+    request_service.delete_request(request_id, db)
+
+
+@router.patch("/{request_id}/close", response_model=RequestRead)
+def close_request(
+    request_id: int,
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Admin: close an open request."""
+    return request_service.close_request(request_id, db)
 
 
 @router.post("/{request_id}/apply", response_model=dict, status_code=201)
@@ -93,29 +123,6 @@ def apply(
     teacher: User = Depends(require_teacher),
     db: Session = Depends(get_db),
 ):
-    """Teacher: apply for a substitute request."""
-    app = request_service.apply_for_request(request_id, teacher.id, db)
-    return {"id": app.id, "request_id": app.request_id, "status": app.status}
-
-
-# ── shared ────────────────────────────────────────────────────────────────────
-
-@router.get("/grade-levels", response_model=List[str])
-def grade_levels():
-    """Return all valid grade levels."""
-    return GRADE_LEVELS
-
-
-def _serialize(req: SubstituteRequest) -> dict:
-    return {
-        "id": req.id,
-        "date": str(req.date),
-        "grade_level": req.grade_level,
-        "subject_id": req.subject_id,
-        "time_slot": req.time_slot,
-        "note": req.note,
-        "status": req.status,
-        "expires_at": req.expires_at.isoformat() if req.expires_at else None,
-        "created_by": req.created_by,
-        "created_at": req.created_at.isoformat(),
-    }
+    """Teacher: apply for an open request."""
+    application = request_service.apply_for_request(request_id, teacher.id, db)
+    return {"id": application.id, "request_id": application.request_id, "status": application.status}
