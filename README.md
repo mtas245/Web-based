@@ -81,7 +81,7 @@ Separately, a team member confirmed **19 successful manual Swagger endpoint chec
 
 ### Outstanding / not yet evidenced
 
-- Complete the visual design evidence: sketches or wireframes and user feedback for the main role-specific screens.
+- Review the new [low-fidelity wireframes](docs/UI-WIREFRAMES.md) with the team and obtain design feedback; polished visual designs and implemented responsive UI are not yet available.
 - Finalize **actual** contributions and responsibilities for all group members; the initial assignment table below is tentative, with a fourth-member placeholder.
 - Record lecturer/coaching feedback, scope decisions and agreed deferrals. Dates/deadlines should be checked in Moodle.
 - Save redacted evidence screenshots or responses and audit remaining error/authorization cases (`403` for teacher on admin routes; duplicate applications and conflicting approvals).
@@ -198,6 +198,10 @@ The following stories are retained from the existing README. Their inclusion doe
 These are intended behaviours from the original draft. W-07's automatic deletion conflicts with the stated audit-trail need; W-05's reopening behaviour also needs clarification. See the open questions in Project management.
 
 ## 2. Design
+
+### First low-fidelity wireframes (27 October 2026)
+
+Four editable text wireframes plus a mobile layout and documented error states are available in **[docs/UI-WIREFRAMES.md](docs/UI-WIREFRAMES.md)**: login, administrator request management/new request, teacher available requests/application, administrator application approval. They follow workflows W-01 to W-04. These are **proposed sketches**, not implemented interfaces, and must still be reviewed with the team and lecturer. Some suggested filters and per-request applicant views would need client-side handling or additional API support.
 
 ### Screens and navigation
 
