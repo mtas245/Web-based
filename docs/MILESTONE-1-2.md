@@ -17,7 +17,7 @@ Selected scope for first implemented workflow:
 4. Admin retrieves the request and can modify it while still open.
 5. A teacher can apply to an open request; admin can approve an application.
 
-Design work still to confirm with the team: ownership and actual contributions, UI sketches, workflow exception cases, decisions agreed with the lecturer, and which optional features should be deferred.
+Design work still to confirm with the team: ownership and actual contributions, **team review/feedback on the newly added [wireframes](UI-WIREFRAMES.md)**, workflow exception cases, decisions agreed with the lecturer, and which optional features should be deferred.
 
 ## Milestone 2 — API contract and implementation
 
@@ -220,7 +220,8 @@ The repository's living [README](../README.md) now summarizes the real backend s
 
 ### Evidence still required from the team
 
-- [ ] Provide photos/links to actual UI sketches with navigation, errors and feedback; do not represent planned screens as implemented UI.
+- [x] Create first low-fidelity text wireframes with navigation and error feedback: [UI-WIREFRAMES.md](UI-WIREFRAMES.md), 27 October 2026. These are proposed designs, not an implemented UI.
+- [ ] Review sketches with the team and record the actual user/lecturer feedback; add polished visuals if needed.
 - [ ] Confirm the fourth team member and document actual contributions for **all** members. The README's initial responsibilities are provisional only; no individual coding work has been assigned speculatively.
 - [ ] Record actual coaching discussion, lecturer feedback, decisions on minimal scope and deferred features, with dates; never fabricate meetings or approvals.
 - [ ] Keep a redacted terminal screenshot or saved text of the user-reported `11 passed, 16 warnings` pytest result, plus selected Swagger success/error examples. Never publish passwords, JWTs or private teacher documents.
