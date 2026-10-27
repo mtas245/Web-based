@@ -168,3 +168,29 @@ Together these user-confirmed results demonstrate a manual REST CRUD happy path,
 **Automated pytest execution:** A previous developer reported that collection errors were resolved, but the number of tests passed and final pytest output have not been provided. Earlier "not verified" notes in this document refer to automated test execution and the assistant's own runtime; do not read them as contradicting these subsequent manually confirmed Swagger results.
 
 **Next verification:** Test teacher registration (`POST /api/v1/auth/register`, multipart form), unauthorised/pending-teacher login (`403`), administrator approval (`PATCH /api/v1/teachers/{teacher_id}/approve`), teacher login and request application (`POST /api/v1/requests/{request_id}/apply`), administrator application approval (`PATCH /api/v1/applications/{application_id}/approve`). Create a new open request for this demonstration, since the first manual CRUD test deleted its request. Capture screenshots/redacted responses plus final pytest summary and record actual team contributions.
+
+
+## Manual Swagger evidence — completed teacher application journey (27 October 2026)
+
+A team member reported the following additional results from a running local EduSub backend via Swagger UI. They are **user-confirmed manual tests**; this assistant did not execute the HTTP requests or independently inspect response bodies. The teacher account registration and administrator approval steps were also confirmed successful in conversation, but exact HTTP statuses/response bodies for those two steps were not supplied and are therefore not assigned fabricated status codes here.
+
+| Scenario | Reported HTTP status | Reported outcome |
+| --- | --- | --- |
+| POST `/api/v1/requests/` (administrator creates another open request) | 201 | Created successfully |
+| POST `/api/v1/auth/login` (approved teacher) | 200 | Teacher authentication successful |
+| GET `/api/v1/requests/open` (teacher) | 200 | Open-request listing available |
+| POST `/api/v1/requests/{request_id}/apply` (teacher) | 201 | Application created |
+| PATCH `/api/v1/applications/{application_id}/approve` (administrator) | 200 | Application approved |
+| GET `/api/v1/requests/{request_id}` (administrator after approval) | 200 | Final request status confirmed as `filled` |
+
+These six new observations, added to the earlier 13 individually documented Swagger checks, yield **19 user-reported successful HTTP endpoint checks** (some routes were invoked in multiple roles/scenarios). Taken together, they cover the central backend business flow: a pending teacher registers and is approved by an administrator; the administrator creates a substitute request; the approved teacher signs in and applies; the administrator approves the application; and the request transitions to `filled`.
+
+### Milestone 2 priorities (as of this evidence)
+
+1. **Capture objective execution evidence:** copy the final `python -m pytest -q` summary, including number of tests passed/failed, and save redacted Swagger screenshots or example request/response bodies for valid POST, invalid POST, authorization rejection, application approval and final `filled` state. Manual test reports do not establish automated test success.
+2. **Complete the contract review:** inspect `/openapi.json` and `/docs` for all main schemas, examples, status codes and operation descriptions; distinguish implemented, manually verified and planned operations, especially teacher registration, approval and application flows.
+3. **Test remaining negative/authorization paths:** pending teacher must not sign in (expected 403), teacher cannot use administrator routes (expected 403), repeated application/conflicting approvals should be rejected (expected 409); confirm actual responses in the running backend.
+4. **Synchronize the root README and team evidence:** finalize individual responsibilities and actual contributions, documented reuse of the earlier Advanced Programming EduSub implementation, missing design/UI sketches, coaching decisions, known limitations and local reproduction steps. The root README may still contain unconfirmed plans/placeholders.
+5. **Security/robustness before final delivery:** move the hard-coded JWT signing secret into environment configuration, review document upload access and filename handling, ensure deterministic demo data, and test race safety. These are known follow-up concerns and must not be presented as verified fixes.
+
+The React/Vite frontend and integrated UI-to-backend journey remain **not demonstrated**. They are a subsequent integration milestone concern, not evidence to falsely claim as completed Milestone 2.
