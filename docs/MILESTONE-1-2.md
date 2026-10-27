@@ -194,3 +194,21 @@ These six new observations, added to the earlier 13 individually documented Swag
 5. **Security/robustness before final delivery:** move the hard-coded JWT signing secret into environment configuration, review document upload access and filename handling, ensure deterministic demo data, and test race safety. These are known follow-up concerns and must not be presented as verified fixes.
 
 The React/Vite frontend and integrated UI-to-backend journey remain **not demonstrated**. They are a subsequent integration milestone concern, not evidence to falsely claim as completed Milestone 2.
+
+
+## Automated pytest execution — user-confirmed (27 October 2026)
+
+A team member ran the tests locally from `backend/` using the active virtual environment with **Python 3.12.10**, and supplied this pytest summary:
+
+```text
+........... [100%]
+11 passed, 16 warnings in 1.27s
+```
+
+Command: `python -m pytest -q`.
+
+**Result: 11 passed, 0 failed, 0 collection errors.** This is user-supplied terminal evidence, not a CI execution and not a test run performed by the assistant. The warnings do not invalidate the passing result. Reported warnings include pytest-asyncio's unspecified fixture loop scope, Starlette/AnyIO BlockingPortal deprecation, FastAPI `@app.on_event("startup")` deprecation, and naive `datetime.utcnow()` deprecation. They warrant maintenance work but are not failures in this run.
+
+Together with the 19 previously documented user-confirmed manual Swagger checks, this provides concrete backend verification for the Milestone 2 implemented slice. Automated test dependency overrides in `test_request_workflow.py` mean the 11 passing tests are **not** equivalent to comprehensive end-to-end authentication/security tests; manual login and access checks are separately documented. Preserve this distinction when reporting project readiness.
+
+Next priorities: capture a redacted screenshot or saved transcript of the pytest result and selected Swagger responses, verify untested negative authorization/business-rule scenarios, review the generated OpenAPI contract for completeness, resolve README design/ownership placeholders, and address JWT/upload security as appropriate. Frontend integration is still pending.
