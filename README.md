@@ -3,13 +3,93 @@
 > Substitute Teacher Coordination Platform  
 > FHNW — Web-based Applications (HS26) | Dr. Devid Montecchiari
 
-**Current stage:** Milestone 1 — design draft.
+**Current stage (27 October 2026):** Milestone 1 design documentation + Milestone 2 functional backend/API slice; the planned React/Vite frontend has **not** been implemented or demonstrated.
 
-Update this README throughout the project; do not start a separate document for each milestone. 
+This is the living project README, retaining the original Milestone 1 design draft and recording the subsequently implemented Milestone 2 backend. The source-of-truth OpenAPI contract is generated at `/openapi.json`; the earlier examples further down are **historical design examples** and may differ from the actual endpoints. For verified endpoint names and JSON payloads, use the current API summary below and `/docs`.
 
-Later sections will be introduced in the fourth theory session and subsequent classes. For now, document the design draft below.
+**Development and evidence:** Work is committed on [`mtas245/Web-based` branch `feature/milestone1-2`](https://github.com/mtas245/Web-based/tree/feature/milestone1-2), a fork of the [team repository](https://github.com/uAhmet1907/Web-based). The team repository has not been updated by this work. See [the detailed Milestone 1–2 implementation and test record](docs/MILESTONE-1-2.md).
 
-Replace the prompts with your group's current thinking. Drafts and open questions are expected; no running backend, database or complete OpenAPI contract is required for this milestone. If your idea is still undecided, use the bar scenario and class exercises as a starting point and identify what you have adapted.
+## Milestone 2 — working backend, API and evidence
+
+### Implemented slice and boundaries
+
+The browser-independent FastAPI backend uses SQLModel with local SQLite persistence (`backend/edusub.db`). The tested core workflow is: administrator authenticates → creates an open substitute request for an existing subject → an approved teacher signs in and applies → administrator approves an application → the request changes to `filled`. An administrator can also read, update and delete an open request, subject to rules and validation.
+
+The application layers are:
+- **API boundary and contracts:** `backend/routers/` plus `backend/schemas/` (FastAPI/OpenAPI and Pydantic).
+- **Business logic:** `backend/services/` (request status transitions, application decisions, account workflows).
+- **Relational persistence:** `backend/models/` and `backend/database.py` (SQLModel + SQLite).
+- **Authentication / access checks:** `backend/core/` (JWT and role dependencies).
+
+The proposed React/Vite UI, responsive layout and UI→API integration are still **planned**. The earlier NiceGUI-based [EduSub Advanced Programming project](https://github.com/mtas245/EduSub_Project) supplied domain concepts/workflows but is not evidence that this project's new frontend works.
+
+### Reproduce locally (Windows / PowerShell)
+
+From the cloned repository root:
+
+```powershell
+cd backend
+py -3.12 -m venv .venv
+.\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt
+.\\.venv\\Scripts\\python.exe -m pytest -q
+.\\.venv\\Scripts\\python.exe -m uvicorn main:app --reload
+```
+
+The API root is `http://127.0.0.1:8000/`, Swagger UI is `http://127.0.0.1:8000/docs`, and machine-readable OpenAPI is `http://127.0.0.1:8000/openapi.json`. Run from `backend/`, because the SQLite database URL is relative to that directory.
+
+To bootstrap a **local-only** administrator after installing dependencies, open another terminal in `backend/`:
+
+```powershell
+.\\.venv\\Scripts\\python.exe scripts/create_local_admin.py
+```
+
+Enter a test email, name and unique password interactively; do not commit passwords, local databases or JWTs. The script refuses to overwrite an account with the same email. In `POST /api/v1/auth/login`, enter the email in the form's **username** field, then authorize Swagger using the issued token. Subject fixtures can be created using the admin-only `POST /api/v1/subjects/seed`, followed by `GET /api/v1/subjects/` to discover real subject IDs.
+
+### Implemented API contracts — examples
+
+| Method | Route | Access / behavior |
+| --- | --- | --- |
+| POST | `/api/v1/auth/login` | Public form login; email in `username`, password in `password` |
+| POST | `/api/v1/auth/register` | Public teacher registration via `multipart/form-data`, initially unapproved |
+| GET / PATCH | `/api/v1/teachers/pending`; `/api/v1/teachers/{teacher_id}/approve` | Admin lists pending teachers and approves one (GET and PATCH respectively) |
+| GET / POST | `/api/v1/subjects/`; `/api/v1/subjects/seed` | Authenticated list / admin seed |
+| GET / POST | `/api/v1/requests/` | Admin list / admin create |
+| GET / PATCH / DELETE | `/api/v1/requests/{request_id}` | Admin read / edit open / delete open with no applications |
+| GET | `/api/v1/requests/open` | Approved teacher lists open, unexpired requests |
+| POST | `/api/v1/requests/{request_id}/apply` | Approved teacher applies |
+| GET / PATCH | `/api/v1/applications/pending`; `/api/v1/applications/{application_id}/approve` | Admin list / approval (GET and PATCH respectively) |
+
+Actual admin request-create JSON body (choose a future date and an existing subject ID):
+
+```json
+{
+  "date": "2026-12-01",
+  "grade_level": "3a",
+  "subject_id": 1,
+  "time_slot": "08:00-10:00",
+  "note": "Local API demonstration"
+}
+```
+
+The API uses `grade_level`, not the older draft field `grade`. `POST /auth/register` is a multipart form, **not** a JSON object, and `POST /auth/login` uses OAuth2 form fields. Request creation returns 201; invalid schema 422, unknown subject 400, missing authentication 401, missing permission 403. Request deletion returns 204, and reading a deleted request returns 404.
+
+### Test evidence
+
+**User-confirmed locally, 27 October 2026:** `python -m pytest -q` with Python 3.12.10 produced **11 passed, 16 warnings in 1.27s** (zero failures). These tests cover schema/API contracts and business workflow, but dependency overrides do not constitute complete real-JWT security testing.
+
+Separately, a team member confirmed **19 successful manual Swagger endpoint checks** covering admin authentication and denial without authentication, subject setup, request CRUD, invalid inputs, teacher sign-in/application, admin approval and final request status `filled`. Registration and teacher-account approval also worked according to the user, though their precise HTTP statuses were not provided. These are user-reported demonstrations, not independent CI results. The detailed scenario-by-scenario results and limitations are in [docs/MILESTONE-1-2.md](docs/MILESTONE-1-2.md).
+
+### Outstanding / not yet evidenced
+
+- Complete the visual design evidence: sketches or wireframes and user feedback for the main role-specific screens.
+- Finalize **actual** contributions and responsibilities for all group members; the initial assignment table below is tentative, with a fourth-member placeholder.
+- Record lecturer/coaching feedback, scope decisions and agreed deferrals. Dates/deadlines should be checked in Moodle.
+- Save redacted evidence screenshots or responses and audit remaining error/authorization cases (`403` for teacher on admin routes; duplicate applications and conflicting approvals).
+- Resolve security concerns before real users: hardcoded JWT signing key, uploaded document exposure/name handling, concurrent approval protection and expiry/audit-trail policy.
+- Implement and demonstrate the planned responsive frontend and API integration in a subsequent milestone.
+
+---
+
 
 ## Project overview
 
@@ -30,11 +110,11 @@ EduSub provides:
 - A **teacher onboarding** flow including document upload and account approval
 - A **teacher profile** system (profile picture, bio, subjects, personal staff number)
 
-This module rebuilds EduSub from a NiceGUI monolith (Advanced Programming, SS26) into a proper **FastAPI REST backend** and **React (Vite) frontend** with JWT-based authentication and a clean API/UI separation.
+This module adapts the earlier NiceGUI EduSub concepts into an independently callable **FastAPI REST backend** with JWT-based authentication. A **React (Vite) frontend is planned but not yet implemented**; API/UI separation is an architectural goal until integration is demonstrated.
 
 **GitHub Repository:** https://github.com/uAhmet1907/Web-based
 
-### Team and initial responsibilities
+### Team and initial responsibilities (provisional; actual contributions still to confirm)
 
 | Member | Initial responsibility | Next action |
 |---|---|---|
@@ -144,7 +224,7 @@ Link your sample JSON files for relevant things in the workflow. Use fictional d
 
 #### Sample JSON and draft API examples
 
-The following API ideas use `/api/v1` and show proposed status codes and payloads, not tested endpoints. The existing authentication design uses `Authorization: Bearer <token>`. Its blanket JWT requirement conflicts with login/registration; the access rules are an **Open question**. Sample dates are example data, not milestone dates.
+The following historical Milestone 1 API ideas use `/api/v1` and show **draft** status codes and payloads, not a reliable description of the running API. Refer to the Milestone 2 section at the top and live `/docs` for implemented endpoints. The existing authentication design uses `Authorization: Bearer <token>`. Its blanket JWT requirement conflicts with login/registration; the access rules are an **Open question**. Sample dates are example data, not milestone dates.
 
 #### Auth
 
