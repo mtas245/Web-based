@@ -4,15 +4,17 @@
 
 Die Admin-Tabelle erhält Aktionen zum **Bearbeiten** (`PATCH /api/v1/requests/{id}`) und **Löschen** (`DELETE /api/v1/requests/{id}`). Ein Bearbeitungsformular übernimmt vorhandene Felder, prüft den Zeitraum und zeigt API-Fehler an. Nach beiden Operationen werden die Daten erneut über die API gelesen. Nicht offene Anfragen zeigen keine Bearbeiten-/Löschen-Buttons; das Backend erzwingt die Regeln unabhängig davon. Löschen wird mit einem Bestätigungsdialog abgesichert; bei vorhandenen Bewerbungen ist ein HTTP-409-Konflikt zu erwarten.
 
-**Prüfstatus:** Frontend implementiert; manuelle Testfälle noch offen:
+**Manuelle Bestätigung durch das Team (16. November 2026):** Alle vier im gemeinsamen UI-Testplan ausgeführten CRUD-Prüfungen wurden vom Team als erfolgreich gemeldet. Diese Ergebnisse stammen aus einem lokalen Browserdurchlauf; Screenshots und genaue HTTP-Statuscodes wurden nicht mitgeliefert.
 
-- [ ] Offene Anfrage bearbeiten, speichern und anschliessend geänderte Werte in der Liste sehen.
-- [ ] Mit `12:00–08:00` im Bearbeitungsformular eine sichtbare Fehlermeldung erhalten; keine Änderung speichern.
-- [ ] Eine offene Anfrage **ohne Bewerbungen** löschen und ihr Verschwinden aus der Liste beobachten.
+- [x] Offene Anfrage bearbeiten, speichern und anschliessend geänderte Werte in der Liste sehen (Teamangabe: bestanden).
+- [x] Mit `12:00–08:00` im Bearbeitungsformular eine sichtbare Fehlermeldung erhalten; keine Änderung speichern (Teamangabe: bestanden).
+- [x] Eine offene Anfrage **ohne Bewerbungen** löschen und ihr Verschwinden aus der Liste beobachten (Teamangabe: bestanden).
 - [ ] Eine offene Anfrage **mit Bewerbungen** zu löschen versuchen: sichtbare Backend-Fehlermeldung, Anfrage bleibt bestehen.
-- [ ] Eine besetzte Anfrage betrachten: keine Bearbeiten-/Löschen-Aktion sichtbar.
+- [x] Eine besetzte Anfrage betrachten: keine Bearbeiten-/Löschen-Aktion sichtbar (Teamangabe: bestanden).
 
-Die obigen Ergebnisse sind **nicht** als manuell bestanden ausgewiesen. Der HTTP-Status ist im Browser-Netzwerk-Tab nachzutragen.
+**Ergebnis: 4/4 ausgeführte manuelle CRUD-Tests bestanden.** Der zusätzliche Konflikttest für das Löschen einer Anfrage mit bestehenden Bewerbungen ist weiterhin offen und darf nicht als bestanden ausgegeben werden. Für die Abgabe sollten passende, anonymisierte Screenshots und gegebenenfalls die tatsächlichen HTTP-Statuscodes aus dem Netzwerk-Tab ergänzt werden.
+
+**Nächste Prioritäten:** (1) Konflikttest für `DELETE` bei vorhandenen Bewerbungen, (2) automatisierter Ende-zu-Ende-Test des gesamten Admin-/Lehrpersonenprozesses, (3) Responsive- und Accessibility-Prüfung, (4) Dokumentation von Teambeiträgen und tatsächlicher Unterrichtsdemonstration. Die fachliche Erweiterung bleibt bewusst nach der technischen Integration priorisiert.
 
 ## Scope
 
