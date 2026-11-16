@@ -5,7 +5,9 @@
 
 **Current stage (16 November 2026):** Milestone 1 design documentation + Milestone 2 functional backend/API slice + an integrated **Milestone 3 React/Vite administrator frontend**. A team member confirmed five successful browser integration checks (login, dashboard, request creation, reloaded request listing); an invalid time-range test initially exposed a frontend issue, which was corrected and successfully retested manually.
 
-**Milestone 3 integration:** [Frontend setup, walkthrough and demo checklist](docs/MILESTONE-3.md). The first UI in `frontend/` covers administrator login, creation of a request and reading persisted requests; teacher-facing views remain planned.
+**Milestone 3 integration:** [Frontend setup, walkthrough and demo checklist](docs/MILESTONE-3.md). The confirmed first UI in `frontend/` covers administrator login, creation of a request and reading persisted requests. Teacher-facing functionality is being added incrementally.
+
+**Next frontend iteration:** The React application now also contains an initial *teacher view* for listing open requests and applying, using the existing API and `GET /applications/my`. Its production build passes, but the teacher journey has **not yet been manually verified in the browser**. See [frontend design decisions and CW46 teaching concepts](docs/FRONTEND-DECISIONS.md) for the React/Jinja trade-off, `fetch` workflow, error handling and verification checklist.
 
 This is the living project README, retaining the original Milestone 1 design draft and recording the subsequently implemented Milestone 2 backend. The source-of-truth OpenAPI contract is generated at `/openapi.json`; the earlier examples further down are **historical design examples** and may differ from the actual endpoints. For verified endpoint names and JSON payloads, use the current API summary below and `/docs`.
 
