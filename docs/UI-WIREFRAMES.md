@@ -2,6 +2,8 @@
 
 **Status:** Proposed design sketches created 27 October 2026; **not implemented or usability-tested**. These sketches are deliberately simple text diagrams so the whole team can review and edit them via Git. Screen examples contain fictional data. Product and workflow grounding: [README](../README.md), [Milestone 1–2 record](MILESTONE-1-2.md).
 
+**Language note:** The labels in these conceptual wireframes are presented in English for the course documentation. The current implemented EduSub UI still uses German labels; translating the wireframes does not change the application.
+
 ## Navigation and roles
 
 ```mermaid
@@ -26,21 +28,21 @@ Role-dependent access is enforced by the API, not by hiding UI links alone. A re
 
 ```text
 ┌──────────────────────────────────────────────┐
-│ EduSub                              [Hilfe]  │
+│ EduSub                              [Help]  │
 │                                              │
-│           Stellvertretungen koordinieren    │
+│           Coordinate substitute teachers    │
 │                                              │
-│           E-Mail-Adresse                    │
+│           Email address                     │
 │           [admin@example.invalid________]   │
 │                                              │
-│           Passwort                          │
+│           Password                          │
 │           [••••••••••••••••_____________] 👁 │
 │                                              │
-│           [          Anmelden          ]     │
-│           Als Lehrperson registrieren       │
+│           [          Sign in          ]     │
+│           Register as a teacher             │
 │                                              │
-│           Fehler: E-Mail oder Passwort      │
-│           stimmt nicht.                     │
+│           Error: Invalid email or           │
+│           password.                         │
 └──────────────────────────────────────────────┘
 ```
 
@@ -50,34 +52,34 @@ Role-dependent access is enforced by the API, not by hiding UI links alone. A re
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│ EduSub / Administration           [Anfragen] [Lehrpersonen] [Logout] │
+│ EduSub / Administration           [Requests] [Teachers] [Logout]    │
 ├──────────────────────────────────────────────────────────────────────┤
-│ Übersicht                                                            │
-│ [Offen: 3]        [Besetzt: 8]      [Bewerbungen: 2] [Freigaben: 1]  │
+│ Overview                                                             │
+│ [Open: 3]        [Filled: 8]      [Applications: 2] [Approvals: 1]    │
 │                                                                      │
-│ Stellvertretungsanfragen                      [+ Neue Anfrage]       │
+│ Substitute requests                           [+ New request]       │
 │ ┌──────┬────────┬───────────┬─────────┬──────────┬────────────────┐  │
-│ │ ID   │ Datum  │ Klasse    │ Fach    │ Status   │ Aktionen       │  │
+│ │ ID   │ Date   │ Grade     │ Subject │ Status   │ Actions        │  │
 │ ├──────┼────────┼───────────┼─────────┼──────────┼────────────────┤  │
-│ │ 23   │ 01.12. │ 3a        │ Mathe   │ Offen    │ Ansehen Ändern │  │
-│ │ 22   │ 26.11. │ 4b        │ Deutsch │ Besetzt  │ Ansehen        │  │
+│ │ 23   │ 01.12. │ 3a        │ Maths   │ Open     │ View / Edit    │  │
+│ │ 22   │ 26.11. │ 4b        │ German  │ Filled   │ View           │  │
 │ └──────┴────────┴───────────┴─────────┴──────────┴────────────────┘  │
 └──────────────────────────────────────────────────────────────────────┘
 
-    [+ Neue Anfrage] opens form:
+    [+ New request] opens form:
 
     ┌──────────────────────────────────────────┐
-    │ Neue Stellvertretungsanfrage         [×] │
-    │ Datum*        [2026-12-01______]         │
-    │ Klasse*       [3a              ▾]       │
-    │ Fach*         [Mathematics     ▾]       │
-    │ Zeitfenster   [08:00-10:00_____]         │
-    │ Notiz         [_______________]         │
+    │ New substitute request               [×] │
+    │ Date*         [2026-12-01______]         │
+    │ Grade*        [3a              ▾]       │
+    │ Subject*      [Mathematics     ▾]       │
+    │ Time slot     [08:00-10:00_____]         │
+    │ Note          [_______________]         │
     │               [_______________]         │
     │                                          │
-    │ [Abbrechen]          [Anfrage erstellen] │
+    │ [Cancel]             [Create request]    │
     │                                          │
-    │ Fehlerbereich bei ungültigen Angaben    │
+    │ Validation error area                    │
     └──────────────────────────────────────────┘
 ```
 
@@ -87,47 +89,47 @@ Role-dependent access is enforced by the API, not by hiding UI links alone. A re
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│ EduSub / Lehrperson              [Verfügbar] [Meine Bewerbungen]     │
+│ EduSub / Teacher                 [Available] [My applications]       │
 ├──────────────────────────────────────────────────────────────────────┤
-│ Offene Stellvertretungen                      [Mein Profil] [Logout] │
-│ Klasse [Alle ▾]   Fach [Alle ▾]           [Filter zurücksetzen]      │
+│ Open substitute requests                       [My profile] [Logout] │
+│ Grade [All ▾]    Subject [All ▾]             [Reset filters]         │
 │                                                                      │
 │ ┌────────────────────────────────────────────────────────────────┐   │
-│ │ 3a  ·  Mathematik                 01.12.2026 · 08:00–10:00      │   │
-│ │ Vertretung für zwei Lektionen                              │   │
-│ │ [Details anzeigen]                           [Bewerben]        │   │
+│ │ 3a  ·  Mathematics                01.12.2026 · 08:00–10:00      │   │
+│ │ Substitute needed for two lessons                        │   │
+│ │ [View details]                              [Apply]          │   │
 │ └────────────────────────────────────────────────────────────────┘   │
 │ ┌────────────────────────────────────────────────────────────────┐   │
-│ │ 4b  ·  Deutsch                    03.12.2026 · 09:00–11:00      │   │
-│ │ [Details anzeigen]                           [Bewerben]        │   │
+│ │ 4b  ·  German                     03.12.2026 · 09:00–11:00      │   │
+│ │ [View details]                              [Apply]          │   │
 │ └────────────────────────────────────────────────────────────────┘   │
-│ Keine Treffer? «Keine passenden offenen Anfragen vorhanden.»        │
+│ No results? "No matching open requests found."                      │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-**Actions/data:** Approved teacher signs in; `GET /api/v1/requests/open` lists active unexpired items; `POST /api/v1/requests/{request_id}/apply` returns 201 and a pending application. Change primary button to “Beworben” after success. **Errors:** 401/403 auth; application already exists (business-rule rejection), request no longer open (conflict); show actionable, accessible inline feedback, preserve list position. Subject filtering is a **design proposal**: the currently implemented open-request endpoint supports `grade_level`, not a subject query parameter. The UI could filter an already fetched list or the backend can be extended.
+**Actions/data:** Approved teacher signs in; `GET /api/v1/requests/open` lists active unexpired items; `POST /api/v1/requests/{request_id}/apply` returns 201 and a pending application. Change primary button to “Applied” after success. **Errors:** 401/403 auth; application already exists (business-rule rejection), request no longer open (conflict); show actionable, accessible inline feedback, preserve list position. Subject filtering is a **design proposal**: the currently implemented open-request endpoint supports `grade_level`, not a subject query parameter. The UI could filter an already fetched list or the backend can be extended.
 
 ## Sketch D — Admin reviews applicants / approves assignment
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│ EduSub / Administration                         [Zurück zur Liste]    │
+│ EduSub / Administration                           [Back to list]     │
 ├──────────────────────────────────────────────────────────────────────┤
-│ Stellvertretung #23                 Status: OFFEN                   │
-│ Datum: 01.12.2026      Klasse: 3a       Fach: Mathematik           │
-│ Zeit: 08:00–10:00      Notiz: Vertretung für zwei Lektionen         │
+│ Substitute request #23              Status: OPEN                   │
+│ Date: 01.12.2026       Grade: 3a       Subject: Mathematics       │
+│ Time: 08:00–10:00      Note: Substitute for two lessons             │
 │                                                                      │
-│ Bewerbungen                                                         │
+│ Applications                                                         │
 │ ┌────────────────────────────────────────────────────────────────┐   │
-│ │ Test Lehrperson             Status: ausstehend                │   │
-│ │ [Profil ansehen]   [Ablehnen]          [Bewerbung genehmigen] │   │
+│ │ Test teacher                Status: pending                   │   │
+│ │ [View profile]    [Reject]           [Approve application]    │   │
 │ └────────────────────────────────────────────────────────────────┘   │
 │                                                                      │
-│ Bestätigungsdialog: «Lehrperson verbindlich zuweisen?»              │
-│ [Abbrechen] [Ja, genehmigen]                                         │
+│ Confirmation: "Assign this teacher to the request?"                 │
+│ [Cancel] [Yes, approve]                                             │
 │                                                                      │
-│ Nach Erfolg: Anfrage BESetzt · Bewerbung genehmigt                 │
-│ Andere ausstehende Bewerbungen: automatisch abgelehnt              │
+│ After success: Request FILLED · Application approved                │
+│ Other pending applications: automatically rejected                 │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -137,23 +139,23 @@ Role-dependent access is enforced by the API, not by hiding UI links alone. A re
 
 ```text
 ┌──────────────────────────────┐
-│ EduSub            [Menü ☰]   │
+│ EduSub            [Menu ☰]   │
 ├──────────────────────────────┤
-│ Offene Anfragen              │
-│ Klasse  [Alle ▾]             │
+│ Open requests                │
+│ Grade   [All ▾]              │
 │                              │
 │ ┌──────────────────────────┐ │
-│ │ 3a · Mathematik          │ │
+│ │ 3a · Mathematics         │ │
 │ │ 01.12. · 08:00–10:00     │ │
-│ │ [Details]  [Bewerben]    │ │
+│ │ [Details]  [Apply]       │ │
 │ └──────────────────────────┘ │
 │ ┌──────────────────────────┐ │
-│ │ 4b · Deutsch             │ │
+│ │ 4b · German              │ │
 │ │ 03.12. · 09:00–11:00     │ │
-│ │ [Details]  [Bewerben]    │ │
+│ │ [Details]  [Apply]       │ │
 │ └──────────────────────────┘ │
 │                              │
-│ [Verfügbar] [Bewerbungen]    │
+│ [Available] [Applications]   │
 └──────────────────────────────┘
 ```
 
@@ -164,11 +166,11 @@ Role-dependent access is enforced by the API, not by hiding UI links alone. A re
 | Event | UI response | Backend status / contract |
 | --- | --- | --- |
 | Invalid login | Generic credentials error | 401 |
-| Teacher registration successful | “Warten auf Freigabe” screen | 201 registration, `is_approved: false` |
+| Teacher registration successful | “Awaiting approval” screen | 201 registration, `is_approved: false` |
 | Teacher logs in before approval | Account pending approval notice | 403 |
 | Admin creates request | Success alert and new table row | 201 |
 | Admin submits invalid time/date/grade | Field help; retain entered form data | 422 |
-| Teacher applies | Card action changes to “Beworben” | 201 |
+| Teacher applies | Card action changes to “Applied” | 201 |
 | Admin approves application | `filled` request and `approved` application | 200 |
 | Second approval on filled request | Conflict message, refresh list | 409 |
 | Network error | Non-destructive retry action | Client/network condition, not guaranteed API status |
