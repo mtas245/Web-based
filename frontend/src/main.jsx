@@ -118,7 +118,7 @@ function App() {
   const filledCount = requests.filter((request) => request.status === 'filled').length
   const today = new Date().toLocaleDateString('en-CA')
 
-  if (!token || (!user && !loading)) {
+  if (!token) {
     return <main className="login-layout">
       <section className="intro-panel">
         <div className="brand brand-light"><span className="brand-icon">E</span> EduSub</div>
@@ -136,6 +136,19 @@ function App() {
           <p className="login-hint">Demo: Melde dich mit deinem lokal angelegten Administrator an. Zugangsdaten werden nicht im Projekt gespeichert.</p>
         </div>
       </section>
+    </main>
+  }
+
+  // The token arrives before /auth/me and the initial API requests finish.
+  // Never render the dashboard while user is null: it needs user.full_name.
+  if (!user) {
+    return <main className="loading-screen">
+      <div className="loading-card" role="status">
+        <div className="brand"><span className="brand-icon">E</span> EduSub</div>
+        <h2>{error ? 'Dashboard konnte nicht geladen werden' : 'Dashboard wird geladen …'}</h2>
+        <p className="muted">{error || 'Benutzerprofil und Stellvertretungsanfragen werden geladen.'}</p>
+        {error && <button className="secondary" onClick={signOut}>Zurück zur Anmeldung</button>}
+      </div>
     </main>
   }
 
