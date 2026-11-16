@@ -64,7 +64,7 @@ Neu ergänzt wurden `frontend/src/RegisterForm.jsx` und `frontend/src/AdminTeach
 
 **Bewusste Einschränkung:** Dokument-Uploads und Fächerauswahl im öffentlichen Registrierungsformular sind noch nicht enthalten. Der bestehende Backend-Upload benötigt vor Nutzung mit echten persönlichen Unterlagen eine Sicherheitsprüfung (Dateizugriff, Validierung und Speicherung). Nur fiktive Testkonten verwenden.
 
-- Frontend-Build und 7 bestehende Unit-Tests bestanden; Backend mit neuem Registrierungs-Freigabe-Test: **13 bestanden**. Der neue Browserablauf ist **noch nicht manuell bestätigt**.
+- Frontend-Build und 7 bestehende Unit-Tests bestanden; Backend mit neuem Registrierungs-Freigabe-Test: **13 bestanden**. Der neue Browserablauf wurde anschliessend **von einem Teammitglied manuell bestätigt** (Registrierung, Admin-Freigabe und Anmeldung).
 
 - Lehrpersonenregistrierung und -freigabe sind jetzt im React-Frontend umgesetzt, müssen aber noch im Browser getestet werden.
 - Der Admin kann Bewerbungen bereits über Swagger genehmigen, aber noch nicht über die React-Oberfläche.
