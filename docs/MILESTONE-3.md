@@ -12,7 +12,7 @@ First integrated **administrator** journey for the EduSub coaching session:
 
 The browser requests `/api/v1/...`; Vite proxies these paths to FastAPI on `127.0.0.1:8000` in development. FastAPI validates incoming data in Pydantic schemas, uses service logic for business rules and persists changes in the SQLModel/SQLite database.
 
-This slice intentionally does **not** implement the complete teacher application/approval UI yet. The tested backend workflow for teachers remains available through Swagger. The frontend currently accepts only administrator accounts.
+The original Milestone 3 administrator slice was manually verified. A subsequent frontend iteration adds an initial teacher view for browsing open requests and applying; **that new teacher UI is not yet manually verified**. Administrator approval of teacher applications is still available through Swagger. See [frontend design decisions](FRONTEND-DECISIONS.md).
 
 ## Local run (two terminals)
 
