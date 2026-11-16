@@ -7,7 +7,7 @@
 
 **Milestone 3 integration:** [Frontend setup, walkthrough and demo checklist](docs/MILESTONE-3.md). The confirmed first UI in `frontend/` covers administrator login, creation of a request and reading persisted requests. Teacher-facing functionality is being added incrementally.
 
-**Next frontend iteration:** The React application now also contains an initial *teacher view* for listing open requests and applying, using the existing API and `GET /applications/my`. Its production build passes, but the teacher journey has **not yet been manually verified in the browser**. See [frontend design decisions and CW46 teaching concepts](docs/FRONTEND-DECISIONS.md) for the React/Jinja trade-off, `fetch` workflow, error handling and verification checklist.
+**Frontend progress:** A team member has now manually confirmed the approved teacher login, listing of open requests, dynamic class filter and successful application with status `pending`. A new administrator application-management component supports approve/reject and refreshes the requests list after the API decision; **that new admin UI is implemented but not yet manually verified**. See [Milestone 3 evidence](docs/MILESTONE-3.md) and [frontend design decisions and CW46 teaching concepts](docs/FRONTEND-DECISIONS.md).
 
 This is the living project README, retaining the original Milestone 1 design draft and recording the subsequently implemented Milestone 2 backend. The source-of-truth OpenAPI contract is generated at `/openapi.json`; the earlier examples further down are **historical design examples** and may differ from the actual endpoints. For verified endpoint names and JSON payloads, use the current API summary below and `/docs`.
 
@@ -25,7 +25,7 @@ The application layers are:
 - **Relational persistence:** `backend/models/` and `backend/database.py` (SQLModel + SQLite).
 - **Authentication / access checks:** `backend/core/` (JWT and role dependencies).
 
-The initial React/Vite administrator UI, responsive layout and UI→API integration are **implemented and manually demonstrated**. Teacher screens and a complete workflow UI are still pending. The earlier NiceGUI-based [EduSub Advanced Programming project](https://github.com/mtas245/EduSub_Project) supplied domain concepts/workflows but is not evidence that this project's new frontend works.
+The initial React/Vite administrator and teacher interfaces are **implemented and their basic workflows manually demonstrated**. The newly added admin decision buttons and the full combined workflow are pending manual verification. The earlier NiceGUI-based [EduSub Advanced Programming project](https://github.com/mtas245/EduSub_Project) supplied domain concepts/workflows but is not evidence that this project's new frontend works.
 
 ### Reproduce locally (Windows / PowerShell)
 
