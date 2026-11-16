@@ -4,6 +4,8 @@ import { apiRequest, login } from './api'
 import { validateTimeRange } from './validation'
 import TeacherDashboard from './TeacherDashboard'
 import AdminApplications from './AdminApplications'
+import RegisterForm from './RegisterForm'
+import AdminTeacherApprovals from './AdminTeacherApprovals'
 import './style.css'
 
 const initialForm = { date: '', grade_level: '', subject_id: '', start: '', end: '', note: '' }
@@ -29,6 +31,7 @@ function App() {
   const [formError, setFormError] = useState('')
   const [teacherRequests, setTeacherRequests] = useState([])
   const [teacherApplications, setTeacherApplications] = useState([])
+  const [showRegistration, setShowRegistration] = useState(false)
 
   function signOut() {
     sessionStorage.removeItem('edusub_token')
@@ -154,6 +157,7 @@ function App() {
         <div className="intro-foot">FHNW · Web-based Applications · Milestone 3</div>
       </section>
       <section className="login-panel">
+        {showRegistration ? <div className="login-card"><RegisterForm onBack={() => { setShowRegistration(false); setError('') }} /></div> :
         <div className="login-card"><span className="pill">Admin & Lehrpersonen</span><h2>Willkommen zurück</h2><p className="muted">Melde dich an, um Stellvertretungen zu verwalten oder dich zu bewerben.</p>
           <form onSubmit={handleLogin} className="stack">
             <label>E-Mail-Adresse<input type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="admin@schule.ch" required /></label>
@@ -162,7 +166,9 @@ function App() {
             <button className="primary full" disabled={busy || loading}>{busy || loading ? 'Bitte warten …' : 'Anmelden →'}</button>
           </form>
           <p className="login-hint">Demo: Verwende deinen lokalen Administrator oder einen freigeschalteten Lehrpersonen-Account. Zugangsdaten werden nicht im Projekt gespeichert.</p>
+          <button className="secondary full" onClick={() => { setShowRegistration(true); setError('') }}>Als Lehrperson registrieren</button>
         </div>
+        }
       </section>
     </main>
   }
@@ -192,6 +198,7 @@ function App() {
       {error && <p className="alert error" role="alert">{error}</p>}{success && <p className="alert success" role="status">{success}</p>}
       {showForm && <section className="form-card"><div className="card-heading"><div><h2>Neue Stellvertretungsanfrage</h2><p className="muted">Die Anfrage wird direkt über die REST API gespeichert.</p></div><button className="icon-button" aria-label="Formular schliessen" onClick={() => setShowForm(false)}>✕</button></div><form onSubmit={handleCreate} className="request-form"><label>Datum<input type="date" min={today} value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} required /></label><label>Klassenstufe<select value={form.grade_level} onChange={(event) => setForm({ ...form, grade_level: event.target.value })} required><option value="">Bitte wählen</option>{grades.map((grade) => <option key={grade} value={grade}>{grade}</option>)}</select></label><label>Fach<select value={form.subject_id} onChange={(event) => setForm({ ...form, subject_id: event.target.value })} required><option value="">Bitte wählen</option>{subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select></label><div className="time-row"><label>Von<input type="time" value={form.start} onChange={(event) => { setForm({ ...form, start: event.target.value }); setFormError('') }} /></label><label>Bis<input type="time" value={form.end} onChange={(event) => { setForm({ ...form, end: event.target.value }); setFormError('') }} /></label></div><label className="wide">Bemerkung (optional)<textarea rows="3" maxLength="1000" value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} placeholder="Wichtige Informationen zur Lektion …" /></label>{formError && <p className="alert error form-error" role="alert">{formError}</p>}<div className="form-actions"><button type="button" className="secondary" onClick={() => setShowForm(false)}>Abbrechen</button><button className="primary" disabled={busy || !subjects.length}>{busy ? 'Speichert …' : 'Anfrage erstellen →'}</button></div></form>{!subjects.length && <p className="hint">Keine Fächer vorhanden. Bitte zuerst einmalig im Swagger als Admin <code>POST /api/v1/subjects/seed</code> ausführen.</p>}</section>}
       <AdminApplications token={token} requests={requests} onRequestsChanged={refreshRequests} />
+      <AdminTeacherApprovals token={token} />
       <section className="table-card"><div className="card-heading"><div><h2>Stellvertretungsanfragen</h2><p className="muted">Aktuelle Daten aus dem Backend</p></div><button className="secondary" onClick={async () => { setError(''); try { await refreshRequests() } catch (err) { setError(err.message) } }}>↻ Aktualisieren</button></div><div className="table-scroll"><table><thead><tr><th>DATUM</th><th>KLASSE</th><th>FACH</th><th>ZEIT</th><th>STATUS</th></tr></thead><tbody>{requests.map((request) => <tr key={request.id}><td>{formatDate(request.date)}</td><td><span className="grade">{request.grade_level}</span></td><td>{subjectName(request.subject_id)}</td><td>{request.time_slot || '—'}</td><td><span className={`status ${request.status}`}>{request.status === 'open' ? '● Offen' : request.status === 'filled' ? '● Besetzt' : request.status === 'closed' ? '● Geschlossen' : request.status}</span></td></tr>)}</tbody></table></div>{!requests.length && <div className="empty">Noch keine Stellvertretungsanfragen vorhanden. Erstelle deine erste Anfrage.</div>}</section>
       <footer className="footer">EduSub · Integrationsdemo · React + FastAPI + SQLite</footer>
       </main>
