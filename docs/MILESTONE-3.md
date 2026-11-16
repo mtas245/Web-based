@@ -58,7 +58,9 @@ The following results were **reported and confirmed by a team member** after run
 | Login with correct email and wrong password | **Passed** | Error handling and denied access behaved as expected according to the team member. |
 | Create request with invalid time range (12:00–08:00) | **Failed** | Expected visible validation error and no creation were **not confirmed**. Exact observed UI behaviour and HTTP response have not been supplied; investigate before claiming a fix. |
 
-**Investigation:** The current backend `schemas/request.py` rejects time ranges with end <= start via `validate_time_slot`, which should yield HTTP 422. The frontend sends the `HH:MM-HH:MM` string to the API when both times are filled in and renders any API error in an alert above the request form. This code-level inspection does not explain the reported failure conclusively. Inspect browser Network → POST `/api/v1/requests/` status and request body, whether a record was created, and whether the error appears out of view. Do not classify this test as passed until repeated successfully.
+**Further investigation / pending correction (16 November 2026):** The team clarified that the invalid request was actually created. Code inspection shows that the frontend currently sends `time_slot: null` if either time input is blank, which the API intentionally permits because time slots are optional. This is a possible explanation but the exact browser request was not captured, so the root cause is not conclusively confirmed. A local (not yet published) frontend fix validates both time inputs together and rejects inverted/equal intervals before POST; it adds inline errors and seven passing unit tests. A new backend regression test verifies that `12:00-08:00` returns HTTP 422 with no database insertion (12 Python tests passing locally). **The correction is not yet part of the GitHub branch and requires another manual browser test after it is published.**
+
+**Initial investigation:** The current backend `schemas/request.py` rejects time ranges with end <= start via `validate_time_slot`, which should yield HTTP 422. The frontend sends the `HH:MM-HH:MM` string to the API when both times are filled in and renders any API error in an alert above the request form. This code-level inspection does not explain the reported failure conclusively. Inspect browser Network → POST `/api/v1/requests/` status and request body, whether a record was created, and whether the error appears out of view. Do not classify this test as passed until repeated successfully.
 
 ## Coaching demo / verification checklist
 
@@ -71,7 +73,7 @@ The following results were **reported and confirmed by a team member** after run
 - [ ] Confirm the same request appears through Swagger `GET /api/v1/requests/` and, if helpful, inspect the SQLite persistence.
 - [ ] Retest invalid time range and show an API validation error (HTTP 422): team reported **failed**, details pending.
 - [ ] Explain browser → Vite proxy → FastAPI router → service → SQLModel → SQLite → JSON response.
-- [ ] Run `python -m pytest -q` from the backend virtual environment and capture results.
+- [ ] Run `python -m pytest -q` from the updated backend and capture results (local unpublished test run: 12 passed, 20 warnings).
 - [ ] Record actual team contributors, coaching feedback, and outstanding integration tasks.
 
 Checked items reflect team-confirmed manual browser results; unchecked items remain pending and must not be reported as verified. The successful admin login is confirmed, but the incorrect-password case in the combined login checklist is still pending.
