@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { apiRequest, login } from './api'
 import { validateTimeRange } from './validation'
+import TeacherDashboard from './TeacherDashboard'
 import './style.css'
 
 const initialForm = { date: '', grade_level: '', subject_id: '', start: '', end: '', note: '' }
@@ -25,6 +26,8 @@ function App() {
   const [form, setForm] = useState(initialForm)
   const [showForm, setShowForm] = useState(false)
   const [formError, setFormError] = useState('')
+  const [teacherRequests, setTeacherRequests] = useState([])
+  const [teacherApplications, setTeacherApplications] = useState([])
 
   function signOut() {
     sessionStorage.removeItem('edusub_token')
@@ -43,17 +46,32 @@ function App() {
       setError('')
       try {
         const current = await apiRequest('/auth/me', { token })
-        if (current.role !== 'admin') throw new Error('Diese Milestone-3-Demo ist derzeit für Administratoren vorgesehen.')
-        const [allRequests, availableSubjects, availableGrades] = await Promise.all([
-          apiRequest('/requests/', { token }),
-          apiRequest('/subjects/', { token }),
-          apiRequest('/requests/grade-levels'),
-        ])
-        if (!cancelled) {
-          setUser(current)
-          setRequests(allRequests)
-          setSubjects(availableSubjects)
-          setGrades(availableGrades)
+        if (current.role === 'admin') {
+          const [allRequests, availableSubjects, availableGrades] = await Promise.all([
+            apiRequest('/requests/', { token }),
+            apiRequest('/subjects/', { token }),
+            apiRequest('/requests/grade-levels'),
+          ])
+          if (!cancelled) {
+            setUser(current)
+            setRequests(allRequests)
+            setSubjects(availableSubjects)
+            setGrades(availableGrades)
+          }
+        } else if (current.role === 'teacher') {
+          const [available, mine, availableSubjects] = await Promise.all([
+            apiRequest('/requests/open', { token }),
+            apiRequest('/applications/my', { token }),
+            apiRequest('/subjects/', { token }),
+          ])
+          if (!cancelled) {
+            setTeacherRequests(available)
+            setTeacherApplications(mine)
+            setSubjects(availableSubjects)
+            setUser(current)
+          }
+        } else {
+          throw new Error('Unbekannte Benutzerrolle.')
         }
       } catch (err) {
         if (!cancelled) {
@@ -74,7 +92,7 @@ function App() {
     setError('')
     try {
       const result = await login(email.trim(), password)
-      if (result.role !== 'admin') throw new Error('Diese Demo ist derzeit nur für Administratoren verfügbar.')
+      if (!['admin', 'teacher'].includes(result.role)) throw new Error('Diese Benutzerrolle wird nicht unterstützt.')
       sessionStorage.setItem('edusub_token', result.access_token)
       setToken(result.access_token)
       setPassword('')
@@ -135,14 +153,14 @@ function App() {
         <div className="intro-foot">FHNW · Web-based Applications · Milestone 3</div>
       </section>
       <section className="login-panel">
-        <div className="login-card"><span className="pill">Administratorbereich</span><h2>Willkommen zurück</h2><p className="muted">Melde dich an, um deine Stellvertretungen zu verwalten.</p>
+        <div className="login-card"><span className="pill">Admin & Lehrpersonen</span><h2>Willkommen zurück</h2><p className="muted">Melde dich an, um Stellvertretungen zu verwalten oder dich zu bewerben.</p>
           <form onSubmit={handleLogin} className="stack">
             <label>E-Mail-Adresse<input type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="admin@schule.ch" required /></label>
             <label>Passwort<input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Dein Passwort" required /></label>
             {error && <p className="alert error" role="alert">{error}</p>}
             <button className="primary full" disabled={busy || loading}>{busy || loading ? 'Bitte warten …' : 'Anmelden →'}</button>
           </form>
-          <p className="login-hint">Demo: Melde dich mit deinem lokal angelegten Administrator an. Zugangsdaten werden nicht im Projekt gespeichert.</p>
+          <p className="login-hint">Demo: Verwende deinen lokalen Administrator oder einen freigeschalteten Lehrpersonen-Account. Zugangsdaten werden nicht im Projekt gespeichert.</p>
         </div>
       </section>
     </main>
@@ -159,6 +177,10 @@ function App() {
         {error && <button className="secondary" onClick={signOut}>Zurück zur Anmeldung</button>}
       </div>
     </main>
+  }
+
+  if (user.role === 'teacher') {
+    return <TeacherDashboard token={token} user={user} subjects={subjects} initialRequests={teacherRequests} initialApplications={teacherApplications} onLogout={signOut} />
   }
 
   return <div className="app-shell">
