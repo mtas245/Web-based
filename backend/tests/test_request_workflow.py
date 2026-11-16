@@ -3,7 +3,7 @@ from datetime import date, timedelta
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.pool import StaticPool
-from sqlmodel import SQLModel, Session, create_engine
+from sqlmodel import SQLModel, Session, create_engine, select
 
 from main import app
 from database import get_db
@@ -84,6 +84,20 @@ def test_request_crud_and_invalid_input(setup_api):
     assert create(client, 999999).status_code == 400
     assert client.delete(f"/api/v1/requests/{req_id}").status_code == 204
     assert client.get(f"/api/v1/requests/{req_id}").status_code == 404
+
+
+def test_invalid_time_range_is_not_persisted(setup_api):
+    client, engine, subject_id, _, _ = setup_api
+    response = client.post("/api/v1/requests/", json={
+        "date": (date.today() + timedelta(days=7)).isoformat(),
+        "grade_level": "3a",
+        "subject_id": subject_id,
+        "time_slot": "12:00-08:00",
+        "note": "Invalid time slot should never be saved",
+    })
+    assert response.status_code == 422, response.text
+    with Session(engine) as db:
+        assert db.exec(select(SubstituteRequest)).all() == []
 
 
 def test_application_approval_workflow(setup_api):
