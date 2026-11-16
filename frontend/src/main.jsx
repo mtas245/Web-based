@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { apiRequest, login } from './api'
+import { validateTimeRange } from './validation'
 import './style.css'
 
 const initialForm = { date: '', grade_level: '', subject_id: '', start: '', end: '', note: '' }
@@ -23,6 +24,7 @@ function App() {
   const [grades, setGrades] = useState([])
   const [form, setForm] = useState(initialForm)
   const [showForm, setShowForm] = useState(false)
+  const [formError, setFormError] = useState('')
 
   function signOut() {
     sessionStorage.removeItem('edusub_token')
@@ -90,9 +92,15 @@ function App() {
 
   async function handleCreate(event) {
     event.preventDefault()
-    setBusy(true)
     setError('')
     setSuccess('')
+    const timeError = validateTimeRange(form.start, form.end)
+    if (timeError) {
+      setFormError(timeError)
+      return
+    }
+    setFormError('')
+    setBusy(true)
     try {
       const payload = {
         date: form.date,
@@ -108,6 +116,7 @@ function App() {
       setShowForm(false)
     } catch (err) {
       setError(err.message)
+      setFormError(err.message)
     } finally {
       setBusy(false)
     }
@@ -155,10 +164,10 @@ function App() {
   return <div className="app-shell">
     <aside className="sidebar"><div className="brand"><span className="brand-icon">E</span> EduSub</div><span className="nav-label">ARBEITSBEREICH</span><div className="nav-active">▦ <span>Übersicht</span></div><div className="sidebar-bottom"><div className="avatar">{user.full_name?.[0]?.toUpperCase() || 'A'}</div><div><strong>{user.full_name}</strong><small>Administrator</small></div></div></aside>
     <div className="main-column"><header className="topbar"><div className="mobile-brand">EduSub</div><span className="topbar-caption">Stellvertretungsmanagement</span><button className="ghost" onClick={signOut}>Abmelden ↗</button></header>
-      <main className="content"><div className="page-heading"><div><span className="eyebrow dark">ADMIN-DASHBOARD</span><h1>Guten Tag, {user.full_name?.split(' ')[0] || 'Admin'} <span className="wave">👋</span></h1><p className="muted">Hier hast du alle Stellvertretungsanfragen im Blick.</p></div><button className="primary" onClick={() => { setShowForm(true); setError(''); setSuccess('') }}>＋ Neue Anfrage</button></div>
+      <main className="content"><div className="page-heading"><div><span className="eyebrow dark">ADMIN-DASHBOARD</span><h1>Guten Tag, {user.full_name?.split(' ')[0] || 'Admin'} <span className="wave">👋</span></h1><p className="muted">Hier hast du alle Stellvertretungsanfragen im Blick.</p></div><button className="primary" onClick={() => { setShowForm(true); setError(''); setSuccess(''); setFormError('') }}>＋ Neue Anfrage</button></div>
       <section className="stats"><div className="stat"><span>Anfragen gesamt</span><strong>{requests.length}</strong><small>Alle erfassten Anfragen</small></div><div className="stat"><span>Offene Anfragen</span><strong>{openCount}</strong><small>Noch nicht besetzt</small></div><div className="stat"><span>Besetzte Anfragen</span><strong>{filledCount}</strong><small>Erfolgreich vermittelt</small></div></section>
       {error && <p className="alert error" role="alert">{error}</p>}{success && <p className="alert success" role="status">{success}</p>}
-      {showForm && <section className="form-card"><div className="card-heading"><div><h2>Neue Stellvertretungsanfrage</h2><p className="muted">Die Anfrage wird direkt über die REST API gespeichert.</p></div><button className="icon-button" aria-label="Formular schliessen" onClick={() => setShowForm(false)}>✕</button></div><form onSubmit={handleCreate} className="request-form"><label>Datum<input type="date" min={today} value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} required /></label><label>Klassenstufe<select value={form.grade_level} onChange={(event) => setForm({ ...form, grade_level: event.target.value })} required><option value="">Bitte wählen</option>{grades.map((grade) => <option key={grade} value={grade}>{grade}</option>)}</select></label><label>Fach<select value={form.subject_id} onChange={(event) => setForm({ ...form, subject_id: event.target.value })} required><option value="">Bitte wählen</option>{subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select></label><div className="time-row"><label>Von<input type="time" value={form.start} onChange={(event) => setForm({ ...form, start: event.target.value })} /></label><label>Bis<input type="time" value={form.end} onChange={(event) => setForm({ ...form, end: event.target.value })} /></label></div><label className="wide">Bemerkung (optional)<textarea rows="3" maxLength="1000" value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} placeholder="Wichtige Informationen zur Lektion …" /></label><div className="form-actions"><button type="button" className="secondary" onClick={() => setShowForm(false)}>Abbrechen</button><button className="primary" disabled={busy || !subjects.length}>{busy ? 'Speichert …' : 'Anfrage erstellen →'}</button></div></form>{!subjects.length && <p className="hint">Keine Fächer vorhanden. Bitte zuerst einmalig im Swagger als Admin <code>POST /api/v1/subjects/seed</code> ausführen.</p>}</section>}
+      {showForm && <section className="form-card"><div className="card-heading"><div><h2>Neue Stellvertretungsanfrage</h2><p className="muted">Die Anfrage wird direkt über die REST API gespeichert.</p></div><button className="icon-button" aria-label="Formular schliessen" onClick={() => setShowForm(false)}>✕</button></div><form onSubmit={handleCreate} className="request-form"><label>Datum<input type="date" min={today} value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} required /></label><label>Klassenstufe<select value={form.grade_level} onChange={(event) => setForm({ ...form, grade_level: event.target.value })} required><option value="">Bitte wählen</option>{grades.map((grade) => <option key={grade} value={grade}>{grade}</option>)}</select></label><label>Fach<select value={form.subject_id} onChange={(event) => setForm({ ...form, subject_id: event.target.value })} required><option value="">Bitte wählen</option>{subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select></label><div className="time-row"><label>Von<input type="time" value={form.start} onChange={(event) => { setForm({ ...form, start: event.target.value }); setFormError('') }} /></label><label>Bis<input type="time" value={form.end} onChange={(event) => { setForm({ ...form, end: event.target.value }); setFormError('') }} /></label></div><label className="wide">Bemerkung (optional)<textarea rows="3" maxLength="1000" value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} placeholder="Wichtige Informationen zur Lektion …" /></label>{formError && <p className="alert error form-error" role="alert">{formError}</p>}<div className="form-actions"><button type="button" className="secondary" onClick={() => setShowForm(false)}>Abbrechen</button><button className="primary" disabled={busy || !subjects.length}>{busy ? 'Speichert …' : 'Anfrage erstellen →'}</button></div></form>{!subjects.length && <p className="hint">Keine Fächer vorhanden. Bitte zuerst einmalig im Swagger als Admin <code>POST /api/v1/subjects/seed</code> ausführen.</p>}</section>}
       <section className="table-card"><div className="card-heading"><div><h2>Stellvertretungsanfragen</h2><p className="muted">Aktuelle Daten aus dem Backend</p></div><button className="secondary" onClick={async () => { setError(''); try { await refreshRequests() } catch (err) { setError(err.message) } }}>↻ Aktualisieren</button></div><div className="table-scroll"><table><thead><tr><th>DATUM</th><th>KLASSE</th><th>FACH</th><th>ZEIT</th><th>STATUS</th></tr></thead><tbody>{requests.map((request) => <tr key={request.id}><td>{formatDate(request.date)}</td><td><span className="grade">{request.grade_level}</span></td><td>{subjectName(request.subject_id)}</td><td>{request.time_slot || '—'}</td><td><span className={`status ${request.status}`}>{request.status === 'open' ? '● Offen' : request.status === 'filled' ? '● Besetzt' : request.status === 'closed' ? '● Geschlossen' : request.status}</span></td></tr>)}</tbody></table></div>{!requests.length && <div className="empty">Noch keine Stellvertretungsanfragen vorhanden. Erstelle deine erste Anfrage.</div>}</section>
       <footer className="footer">EduSub · Integrationsdemo · React + FastAPI + SQLite</footer>
       </main>
