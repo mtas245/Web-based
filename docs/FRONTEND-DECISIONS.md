@@ -15,6 +15,7 @@ Basis: *07-Frontend-and-API-Integration-HS26*, besonders Folien 8–13 (HTML, CS
 | Erfolgsnachweis | `POST /requests/` bzw. `POST /requests/{id}/apply`, danach erneutes `GET` | Eine grüne Erfolgsmeldung allein beweist keine Speicherung; serverseitige Daten werden erneut gelesen. |
 | Daten und Berechtigungen | Admin-Ansicht ruft Admin-API auf; Lehrpersonenansicht ruft nur lehrpersonenspezifische Endpunkte auf | Rollenabhängige UI ist benutzerfreundlich; die eigentliche Zugriffsprüfung bleibt zwingend im Backend. |
 | Komponenten | Separate `TeacherDashboard.jsx` für den Lehrpersonen-Workflow | Verantwortlichkeiten bleiben begrenzt; die Sicht ist leichter weiterzuentwickeln und zu testen. |
+| CRUD-Methoden | `RequestRow.jsx` sendet `PATCH` für Änderungen und `DELETE` für das Entfernen einer Anfrage | Die HTTP-Methode macht die beabsichtigte Operation sichtbar. `PATCH` verändert ausgewählte Felder, `DELETE` liefert bei Erfolg HTTP 204 ohne JSON-Antwort. |
 
 ## Warum React/Vite und nicht Jinja oder eine reine statische Seite?
 
@@ -48,6 +49,14 @@ Die bestehende Administrator-Demo (Login → Anfrage erstellen → gespeicherte 
 Keine echten Passwörter, JWTs oder persönlichen Lehrpersonen-Dokumente in Screenshots/Commits speichern.
 
 ## Grenzen und weitere Arbeit
+
+### Administrator: Anfragen bearbeiten und löschen
+
+Die Anfragen-Tabelle enthält für offene Anfragen eine Bearbeiten- und eine Löschen-Aktion. Beim Bearbeiten werden die gespeicherten Felder in ein HTML-Formular übernommen. `validateTimeRange` prüft beide Uhrzeiten vor dem Speichern; zusätzlich validiert FastAPI den Payload. `PATCH /api/v1/requests/{id}` aktualisiert die bestehende Anfrage, danach holt React die gesamte Liste erneut über `GET /requests/`. Beim Löschen fragt `window.confirm` nach und sendet `DELETE /api/v1/requests/{id}`; der API-Client behandelt HTTP 204 ohne JSON-Parsing.
+
+**Entscheidung:** `PATCH` statt `PUT`, weil eine bestehende Ressource gezielt geändert wird. Ein Klick auf einen Button allein gibt keine Berechtigung: Das Backend verweigert Änderungen an nicht offenen Anfragen und das Löschen bei vorhandenen Bewerbungen (Konflikt, HTTP 409). Die Oberfläche blendet für besetzte Anfragen die Aktionen aus, zeigt aber auch Serverfehler sichtbar an. Während eines Requests sind die Buttons gesperrt. Die Komponente ist getrennt von `main.jsx`, damit Tabellenansicht, Formularzustand und HTTP-Aktionen gekapselt bleiben.
+
+**Nachweisstatus:** Implementierung und automatisierte Build-/Testprüfung; ein erneuter manueller Browserdurchlauf für PATCH, DELETE und den Konfliktfall steht noch aus.
 
 ### Registrierung und Admin-Freigabe – neuer Baustein
 
