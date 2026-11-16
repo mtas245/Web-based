@@ -51,23 +51,25 @@ The following results were **reported and confirmed by a team member** after run
 
 **Overall: 5/5 reported manual tests successful.** This supports the central Milestone 3 integrated administrator journey. The final database persistence is supported by the application architecture and re-read behaviour, but has not been separately verified by directly inspecting SQLite during this test.
 
-### Negative frontend cases — not yet executed
+### Negative frontend tests — team report, 16 November 2026
 
-1. Wrong password: show a visible login error and no access to the dashboard.
-2. Invalid time range: enter a start time later than the end time, submit the request and confirm a visible validation error (expected API HTTP 422) with no new record created.
+| Test | Team-reported result | Interpretation / next action |
+| --- | --- | --- |
+| Login with correct email and wrong password | **Passed** | Error handling and denied access behaved as expected according to the team member. |
+| Create request with invalid time range (12:00–08:00) | **Failed** | Expected visible validation error and no creation were **not confirmed**. Exact observed UI behaviour and HTTP response have not been supplied; investigate before claiming a fix. |
 
-Record actual results here only after a team member confirms them.
+**Investigation:** The current backend `schemas/request.py` rejects time ranges with end <= start via `validate_time_slot`, which should yield HTTP 422. The frontend sends the `HH:MM-HH:MM` string to the API when both times are filled in and renders any API error in an alert above the request form. This code-level inspection does not explain the reported failure conclusively. Inspect browser Network → POST `/api/v1/requests/` status and request body, whether a record was created, and whether the error appears out of view. Do not classify this test as passed until repeated successfully.
 
 ## Coaching demo / verification checklist
 
 - [ ] Start the backend and verify `GET /` displays `EduSub API is running`.
 - [x] Start the frontend and load the login page (team-confirmed).
-- [ ] Show incorrect password → visible authentication error; correct admin login → dashboard.
+- [x] Show incorrect password → visible authentication error; correct admin login → dashboard (team-confirmed).
 - [x] Show existing requests in the dashboard (team-confirmed; statistics calculation not separately checked).
 - [x] Create a valid request from the frontend (team-confirmed; exact field values not recorded).
 - [x] Confirm a newly created request appears in the dashboard (team-confirmed).
 - [ ] Confirm the same request appears through Swagger `GET /api/v1/requests/` and, if helpful, inspect the SQLite persistence.
-- [ ] Try an invalid time range and show an API validation error (HTTP 422).
+- [ ] Retest invalid time range and show an API validation error (HTTP 422): team reported **failed**, details pending.
 - [ ] Explain browser → Vite proxy → FastAPI router → service → SQLModel → SQLite → JSON response.
 - [ ] Run `python -m pytest -q` from the backend virtual environment and capture results.
 - [ ] Record actual team contributors, coaching feedback, and outstanding integration tasks.
