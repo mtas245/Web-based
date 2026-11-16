@@ -32,7 +32,9 @@ Basis: *07-Frontend-and-API-Integration-HS26*, besonders Folien 8–13 (HTML, CS
 5. Nach HTTP 201 lädt React offene Anfragen und eigene Bewerbungen erneut (`GET /api/v1/applications/my`).
 6. Ein API-Fehler wird angezeigt; er gilt nicht als erfolgreiche Bewerbung. Zusätzlich prüft das Backend die Berechtigungen und Geschäftsregeln.
 
-Die bestehende Administrator-Demo (Login → Anfrage erstellen → gespeicherte Anfrage lesen) ist **manuell bestätigt**. Die neu hinzugefügte Lehrpersonen-Demo muss **noch lokal mit einem freigeschalteten Lehrpersonen-Account getestet** werden.
+Die bestehende Administrator-Demo (Login → Anfrage erstellen → gespeicherte Anfrage lesen) ist **manuell bestätigt**. Die Lehrpersonen-Demo wurde inzwischen ebenfalls mit einem freigeschalteten Lehrpersonen-Account getestet.
+
+**Statusnachtrag, 16 November 2026:** Die Lehrpersonen-Demo wurde manuell erfolgreich getestet (Login, offene Anfragen, Klassenfilter, Bewerbung und Status `pending`). Der Filter listet absichtlich nur Klassen mit aktuell offenen Anfragen; bereits besetzte Anfragen erscheinen nicht als bewerbbar. Die ergänzte React-Komponente `AdminApplications.jsx` verwendet `GET /applications/pending`, `GET /teachers/` und `PATCH /applications/{id}/approve|reject` und lädt nach der Entscheidung die gespeicherten Daten neu. Dieser Admin-Teil ist noch nicht manuell getestet.
 
 ## Nachweis im Browser (für Coaching und Abgabe)
 
