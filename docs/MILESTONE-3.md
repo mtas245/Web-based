@@ -1,28 +1,30 @@
 # Milestone 3 — Frontend/API integration (HS26)
 
-## Aktuelle Erweiterung: Admin-CRUD über die Weboberfläche
+**Documentation language:** Interface action names in this document are given in English; the currently implemented UI still displays German labels. The documented API endpoints, status codes, and test results are unchanged.
 
-Die Admin-Tabelle erhält Aktionen zum **Bearbeiten** (`PATCH /api/v1/requests/{id}`) und **Löschen** (`DELETE /api/v1/requests/{id}`). Ein Bearbeitungsformular übernimmt vorhandene Felder, prüft den Zeitraum und zeigt API-Fehler an. Nach beiden Operationen werden die Daten erneut über die API gelesen. Nicht offene Anfragen zeigen keine Bearbeiten-/Löschen-Buttons; das Backend erzwingt die Regeln unabhängig davon. Löschen wird mit einem Bestätigungsdialog abgesichert; bei vorhandenen Bewerbungen ist ein HTTP-409-Konflikt zu erwarten.
+## Latest extension: Admin CRUD through the web interface
 
-**Manuelle Bestätigung durch das Team (16. November 2026):** Alle vier im gemeinsamen UI-Testplan ausgeführten CRUD-Prüfungen wurden vom Team als erfolgreich gemeldet. Diese Ergebnisse stammen aus einem lokalen Browserdurchlauf; Screenshots und genaue HTTP-Statuscodes wurden nicht mitgeliefert.
+The admin request table offers **Edit** (`PATCH /api/v1/requests/{id}`) and **Delete** (`DELETE /api/v1/requests/{id}`) actions. The edit form is pre-filled with saved values, validates the time range and displays API errors. Both operations are followed by a fresh API read. Requests that are no longer open have no edit/delete buttons; the backend independently enforces these restrictions. Deletion requires confirmation, and attempts to delete a request with applications should return HTTP 409.
 
-- [x] Offene Anfrage bearbeiten, speichern und anschliessend geänderte Werte in der Liste sehen (Teamangabe: bestanden).
-- [x] Mit `12:00–08:00` im Bearbeitungsformular eine sichtbare Fehlermeldung erhalten; keine Änderung speichern (Teamangabe: bestanden).
-- [x] Eine offene Anfrage **ohne Bewerbungen** löschen und ihr Verschwinden aus der Liste beobachten (Teamangabe: bestanden).
-- [ ] Eine offene Anfrage **mit Bewerbungen** zu löschen versuchen: sichtbare Backend-Fehlermeldung, Anfrage bleibt bestehen.
-- [x] Eine besetzte Anfrage betrachten: keine Bearbeiten-/Löschen-Aktion sichtbar (Teamangabe: bestanden).
+**Manual team confirmation (16 November 2026):** The team reported that all four CRUD checks in the agreed UI test plan passed. These are local browser observations; screenshots and exact HTTP status codes were not supplied.
 
-**Ergebnis: 4/4 ausgeführte manuelle CRUD-Tests bestanden.** Der zusätzliche Konflikttest für das Löschen einer Anfrage mit bestehenden Bewerbungen ist weiterhin offen und darf nicht als bestanden ausgegeben werden. Für die Abgabe sollten passende, anonymisierte Screenshots und gegebenenfalls die tatsächlichen HTTP-Statuscodes aus dem Netzwerk-Tab ergänzt werden.
+- [x] Edit an open request, save it and see the updated values in the list (team-reported pass).
+- [x] Enter `12:00–08:00` in the edit form and see a validation error without saving (team-reported pass).
+- [x] Delete an open request **without applications** and confirm that it disappears from the list (team-reported pass).
+- [ ] Attempt to delete an open request **with applications**: the backend should display an error and preserve the request (manual check still outstanding).
+- [x] Open a filled request and confirm that no Edit/Delete actions are available (team-reported pass).
 
-**Nächste Prioritäten nach erfolgreichem E2E-Test:** (1) Responsive- und Accessibility-Prüfung der integrierten Oberfläche, (2) weitere negative Browserfälle und gezielte Erweiterung der automatisierten Testabdeckung, (3) tatsächliche Teambeiträge und Unterrichtsdemonstration dokumentieren. Die fachliche Erweiterung bleibt bewusst nach der technischen Integration priorisiert.
+**Result: 4/4 executed manual CRUD checks passed.** The additional *manual* deletion-conflict check with existing applications is still outstanding and must not be marked as manually passed; automated tests now cover it. For submission, the team should add redacted screenshots and, where useful, the actual HTTP statuses from the browser's Network tab.
 
-### Automatisierte Integrations- und Browser-Tests (neue Iteration)
+**Next priorities after the successful E2E test:** (1) responsive-layout and accessibility reviews, (2) further negative browser scenarios and focused automated-test coverage, (3) recording actual team contributions and classroom demonstrations. Broader product features remain lower priority than reliable technical integration.
 
-- **Backend-Regressionsnachweis:** `backend/tests/test_request_workflow.py::test_request_with_pending_application_cannot_be_deleted` erstellt eine Anfrage und eine Bewerbung, versucht die Anfrage zu löschen und prüft HTTP **409** sowie das Fortbestehen beider Datensätze. Mit diesem Test: **14 Backend-Tests bestanden** (lokal, 31 Deprecation-Warnungen).
-- **Browser-Test eingerichtet:** `frontend/e2e/workflow.spec.js` beschreibt den Ablauf Admin-Login → Anfrage erstellen → Lehrer-Login → bewerben → unzulässigen Löschversuch prüfen → Bewerbung genehmigen → Status `filled` und `approved` kontrollieren. Playwright startet Backend und Vite automatisch. Der Backend-Testserver (`backend/tests/e2e_server.py`) verwendet eine eigene temporäre SQLite-Datenbank mit ausschliesslich fiktiven Konten; die produktive/lokale EduSub-Datenbank wird nicht verändert.
-- **Ausführungsstatus:** Die 7 Frontend-Unit-Tests sind bestanden; der Vite-Build wurde geprüft. In der Entwicklungs-Sandbox konnte Chromium wegen `socket() failed: Operation not permitted` nicht gestartet werden. Ein erster Windows-Durchlauf scheiterte wegen eines fehlerhaften Formular-Selektors nach 45 Sekunden; dieser wurde im Testskript korrigiert. **Bestätigter Wiederholungstest des Teammitglieds vom 16. November 2026: `1 passed (11.1s)`; der Szenariotest selbst benötigte 4.4 Sekunden.** Damit ist der vollständige Playwright-Ablauf im lokalen Windows-Browser erfolgreich. Das Ergebnis ist eine vom Team übermittelte Terminalausgabe; ein CI-Lauf oder Screenshots liegen nicht vor.
+### Automated integration and browser tests (new iteration)
 
-**Lokaler Browser-Test (Windows / PowerShell):** Python 3.12 und die Backend-Abhängigkeiten müssen in der aktiven Umgebung verfügbar sein. In `backend` die virtuelle Umgebung aktivieren und `python -m pip install -r requirements.txt` ausführen; danach im Verzeichnis `frontend`:
+- **Backend regression evidence:** `backend/tests/test_request_workflow.py::test_request_with_pending_application_cannot_be_deleted` creates a request and application, attempts deletion, checks HTTP **409**, and verifies that both records remain. Including this test, **14 backend tests passed** locally (31 deprecation warnings).
+- **Browser scenario:** `frontend/e2e/workflow.spec.js` covers admin login → request creation → teacher login → application → forbidden deletion attempt → application approval → `filled` and `approved` status checks. Playwright starts FastAPI and Vite automatically. The dedicated test server (`backend/tests/e2e_server.py`) uses a temporary SQLite database with fictional accounts; it does not modify the team's regular EduSub database.
+- **Execution evidence:** Seven frontend unit tests passed, and the Vite production build was successful. Chromium could not launch in the assistant's sandbox because of `socket() failed: Operation not permitted`. The first Windows run timed out after 45 seconds due to an incorrect form selector; this was fixed in the test script. **The team member confirmed a successful repeat run on 16 November 2026: `1 passed (11.1s)`, including 4.4 seconds for the scenario.** This is team-supplied terminal evidence, not a CI run or screenshot archive.
+
+**Local browser test (Windows / PowerShell):** Python 3.12 and the backend dependencies must be available in the active environment. Activate the virtual environment in `backend`, run `python -m pip install -r requirements.txt`, and then run these commands from `frontend`:
 
 ```powershell
 npm install
@@ -30,7 +32,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Falls der Frontend-Terminal eine eigene neue PowerShell-Session ist, dort zuerst `..\backend\.venv\Scripts\Activate.ps1` aufrufen. Der Test startet seine Server selbst auf **127.0.0.1:18000** (Backend) und **127.0.0.1:15173** (Vite); diese Ports müssen frei sein. Testpasswörter gehören ausschliesslich zu wegwerfbaren lokalen Accounts. Der erfolgreiche Windows-Wiederholungslauf ist oben protokolliert.
+If the frontend terminal is a new PowerShell session, first run `..\backend\.venv\Scripts\Activate.ps1`. The test starts its own servers at **127.0.0.1:18000** (backend) and **127.0.0.1:15173** (Vite); both ports must be free. Test passwords belong only to disposable local accounts. The successful Windows repeat run is recorded above.
 
 ## Scope
 
@@ -54,9 +56,9 @@ The original Milestone 3 administrator slice was manually verified. A subsequent
 
 ### Registration and approval browser test – confirmed by team
 
-1. On the login screen select **Als Lehrperson registrieren**, use a fresh fake email and a test password, then submit.
+1. On the login screen select **Register as a teacher**, use a fresh fake email and a test password, then submit.
 2. Confirm the message that approval is required. Logging in before approval should show an error.
-3. Sign in as administrator, find the account under **Lehrpersonen freigeben**, and approve it.
+3. Sign in as administrator, find the account under **Approve teachers**, and approve it.
 4. Sign out, then sign in as the new teacher. The teacher dashboard should open.
 5. Optional error test: register the same email twice; the second attempt must display a backend error without creating another account.
 
@@ -65,9 +67,9 @@ The original Milestone 3 administrator slice was manually verified. A subsequent
 ### End-to-end browser verification — next exercise
 
 1. Admin creates a fresh open request.
-2. Approved teacher logs in, applies and sees `pending` under "Meine Bewerbungen".
-3. Admin signs in and sees the application under "Offene Bewerbungen".
-4. Admin chooses **Genehmigen**, confirms and sees the request status change to `filled`.
+2. Approved teacher logs in, applies and sees `pending` under "My applications".
+3. Admin signs in and sees the application under "Pending applications".
+4. Admin chooses **Approve**, confirms and sees the request status change to `filled`.
 5. Teacher signs in again and sees the application status `approved`.
 6. Confirm the filled request is no longer available for new applications.
 7. Negative check: an already decided application must not be approved a second time (backend should reject with 409); do not falsify results before execution.
