@@ -14,13 +14,13 @@ Die Admin-Tabelle erhält Aktionen zum **Bearbeiten** (`PATCH /api/v1/requests/{
 
 **Ergebnis: 4/4 ausgeführte manuelle CRUD-Tests bestanden.** Der zusätzliche Konflikttest für das Löschen einer Anfrage mit bestehenden Bewerbungen ist weiterhin offen und darf nicht als bestanden ausgegeben werden. Für die Abgabe sollten passende, anonymisierte Screenshots und gegebenenfalls die tatsächlichen HTTP-Statuscodes aus dem Netzwerk-Tab ergänzt werden.
 
-**Nächste Prioritäten:** (1) Konflikttest für `DELETE` bei vorhandenen Bewerbungen, (2) automatisierter Ende-zu-Ende-Test des gesamten Admin-/Lehrpersonenprozesses, (3) Responsive- und Accessibility-Prüfung, (4) Dokumentation von Teambeiträgen und tatsächlicher Unterrichtsdemonstration. Die fachliche Erweiterung bleibt bewusst nach der technischen Integration priorisiert.
+**Nächste Prioritäten nach erfolgreichem E2E-Test:** (1) Responsive- und Accessibility-Prüfung der integrierten Oberfläche, (2) weitere negative Browserfälle und gezielte Erweiterung der automatisierten Testabdeckung, (3) tatsächliche Teambeiträge und Unterrichtsdemonstration dokumentieren. Die fachliche Erweiterung bleibt bewusst nach der technischen Integration priorisiert.
 
 ### Automatisierte Integrations- und Browser-Tests (neue Iteration)
 
 - **Backend-Regressionsnachweis:** `backend/tests/test_request_workflow.py::test_request_with_pending_application_cannot_be_deleted` erstellt eine Anfrage und eine Bewerbung, versucht die Anfrage zu löschen und prüft HTTP **409** sowie das Fortbestehen beider Datensätze. Mit diesem Test: **14 Backend-Tests bestanden** (lokal, 31 Deprecation-Warnungen).
 - **Browser-Test eingerichtet:** `frontend/e2e/workflow.spec.js` beschreibt den Ablauf Admin-Login → Anfrage erstellen → Lehrer-Login → bewerben → unzulässigen Löschversuch prüfen → Bewerbung genehmigen → Status `filled` und `approved` kontrollieren. Playwright startet Backend und Vite automatisch. Der Backend-Testserver (`backend/tests/e2e_server.py`) verwendet eine eigene temporäre SQLite-Datenbank mit ausschliesslich fiktiven Konten; die produktive/lokale EduSub-Datenbank wird nicht verändert.
-- **Ausführungsstatus:** Die 7 Frontend-Unit-Tests sind bestanden; der Vite-Build wurde geprüft. Ein vollständiger Playwright-Durchlauf war in der Entwicklungs-Sandbox **nicht möglich**, weil der dortige Chromium-Prozess mit `socket() failed: Operation not permitted` beendet wurde. Deshalb ist der neue Browser-E2E-Test **noch nicht als bestanden** dokumentiert. Er muss unter Windows ausgeführt und bei Bedarf angepasst werden.
+- **Ausführungsstatus:** Die 7 Frontend-Unit-Tests sind bestanden; der Vite-Build wurde geprüft. In der Entwicklungs-Sandbox konnte Chromium wegen `socket() failed: Operation not permitted` nicht gestartet werden. Ein erster Windows-Durchlauf scheiterte wegen eines fehlerhaften Formular-Selektors nach 45 Sekunden; dieser wurde im Testskript korrigiert. **Bestätigter Wiederholungstest des Teammitglieds vom 16. November 2026: `1 passed (11.1s)`; der Szenariotest selbst benötigte 4.4 Sekunden.** Damit ist der vollständige Playwright-Ablauf im lokalen Windows-Browser erfolgreich. Das Ergebnis ist eine vom Team übermittelte Terminalausgabe; ein CI-Lauf oder Screenshots liegen nicht vor.
 
 **Lokaler Browser-Test (Windows / PowerShell):** Python 3.12 und die Backend-Abhängigkeiten müssen in der aktiven Umgebung verfügbar sein. In `backend` die virtuelle Umgebung aktivieren und `python -m pip install -r requirements.txt` ausführen; danach im Verzeichnis `frontend`:
 
@@ -30,7 +30,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Falls der Frontend-Terminal eine eigene neue PowerShell-Session ist, dort zuerst `..\backend\.venv\Scripts\Activate.ps1` aufrufen. Der Test startet seine Server selbst auf **127.0.0.1:18000** (Backend) und **127.0.0.1:15173** (Vite); diese Ports müssen frei sein. Testpasswörter gehören ausschliesslich zu wegwerfbaren lokalen Accounts. Ein erfolgreicher Browserlauf ist mit dem tatsächlich angezeigten Testresultat nachzutragen.
+Falls der Frontend-Terminal eine eigene neue PowerShell-Session ist, dort zuerst `..\backend\.venv\Scripts\Activate.ps1` aufrufen. Der Test startet seine Server selbst auf **127.0.0.1:18000** (Backend) und **127.0.0.1:15173** (Vite); diese Ports müssen frei sein. Testpasswörter gehören ausschliesslich zu wegwerfbaren lokalen Accounts. Der erfolgreiche Windows-Wiederholungslauf ist oben protokolliert.
 
 ## Scope
 
