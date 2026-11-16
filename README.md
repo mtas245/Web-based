@@ -3,7 +3,7 @@
 > Substitute Teacher Coordination Platform  
 > FHNW — Web-based Applications (HS26) | Dr. Devid Montecchiari
 
-**Current stage (16 November 2026):** Milestone 1 design documentation + Milestone 2 functional backend/API slice + an integrated **Milestone 3 React/Vite administrator frontend**. A team member confirmed five successful browser integration checks (login, dashboard, request creation, reloaded request listing); one negative test with an invalid time range exposed an unresolved frontend issue requiring a retest.
+**Current stage (16 November 2026):** Milestone 1 design documentation + Milestone 2 functional backend/API slice + an integrated **Milestone 3 React/Vite administrator frontend**. A team member confirmed five successful browser integration checks (login, dashboard, request creation, reloaded request listing); an invalid time-range test initially exposed a frontend issue, which was corrected and successfully retested manually.
 
 **Milestone 3 integration:** [Frontend setup, walkthrough and demo checklist](docs/MILESTONE-3.md). The first UI in `frontend/` covers administrator login, creation of a request and reading persisted requests; teacher-facing views remain planned.
 
@@ -77,7 +77,7 @@ The API uses `grade_level`, not the older draft field `grade`. `POST /auth/regis
 
 ### Test evidence
 
-**Milestone 3, team-confirmed 16 November 2026:** Five of five manual browser integration checks passed (admin login, dashboard, request creation and display). The wrong-password negative case passed; the invalid time range (`12:00–08:00`) was reportedly saved, so this negative test is **failed and pending retest**. The backend schema rejects that exact range in existing tests; the frontend validation fix and regression tests are now pushed, but the corrected behaviour must still be verified manually in the browser. See [docs/MILESTONE-3.md](docs/MILESTONE-3.md).
+**Milestone 3, team-confirmed 16 November 2026:** Five of five manual browser integration checks passed (admin login, dashboard, request creation and display). The wrong-password negative case passed; the invalid time range (`12:00–08:00`) was reportedly saved, the frontend was corrected, and the repeat browser test **passed**: an inline validation error appears and the invalid request is not created. The backend separately rejects the exact range with HTTP 422 in automated tests. See [docs/MILESTONE-3.md](docs/MILESTONE-3.md).
 
 
 **User-confirmed locally, 27 October 2026:** `python -m pytest -q` with Python 3.12.10 produced **11 passed, 16 warnings in 1.27s** (zero failures). These tests cover schema/API contracts and business workflow, but dependency overrides do not constitute complete real-JWT security testing.
