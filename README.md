@@ -3,7 +3,9 @@
 > Substitute Teacher Coordination Platform  
 > FHNW — Web-based Applications (HS26) | Dr. Devid Montecchiari
 
-**Current stage (27 October 2026):** Milestone 1 design documentation + Milestone 2 functional backend/API slice; the planned React/Vite frontend has **not** been implemented or demonstrated.
+**Current stage (16 November 2026):** Milestone 1 design documentation + Milestone 2 functional backend/API slice + an initial **Milestone 3 React/Vite admin frontend**. The frontend production build succeeds; browser-to-backend integration still needs to be verified on a running local setup.
+
+**Milestone 3 integration:** [Frontend setup, walkthrough and demo checklist](docs/MILESTONE-3.md). The first UI in `frontend/` covers administrator login, creation of a request and reading persisted requests; teacher-facing views remain planned.
 
 This is the living project README, retaining the original Milestone 1 design draft and recording the subsequently implemented Milestone 2 backend. The source-of-truth OpenAPI contract is generated at `/openapi.json`; the earlier examples further down are **historical design examples** and may differ from the actual endpoints. For verified endpoint names and JSON payloads, use the current API summary below and `/docs`.
 
