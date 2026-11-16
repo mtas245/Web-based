@@ -56,7 +56,7 @@ Die Anfragen-Tabelle enthält für offene Anfragen eine Bearbeiten- und eine Lö
 
 **Entscheidung:** `PATCH` statt `PUT`, weil eine bestehende Ressource gezielt geändert wird. Ein Klick auf einen Button allein gibt keine Berechtigung: Das Backend verweigert Änderungen an nicht offenen Anfragen und das Löschen bei vorhandenen Bewerbungen (Konflikt, HTTP 409). Die Oberfläche blendet für besetzte Anfragen die Aktionen aus, zeigt aber auch Serverfehler sichtbar an. Während eines Requests sind die Buttons gesperrt. Die Komponente ist getrennt von `main.jsx`, damit Tabellenansicht, Formularzustand und HTTP-Aktionen gekapselt bleiben.
 
-**Nachweisstatus:** Implementierung und automatisierte Build-/Testprüfung; ein erneuter manueller Browserdurchlauf für PATCH, DELETE und den Konfliktfall steht noch aus.
+**Nachweisstatus (16. November 2026):** Der gemeinsame Browserdurchlauf für vier Prüfungen wurde vom Team als bestanden bestätigt: offene Anfrage ändern, ungültigen Zeitraum ablehnen, offene Anfrage ohne Bewerbungen löschen und Aktionen für besetzte Anfragen ausblenden. Der gesonderte HTTP-409-Konfliktfall bei bestehenden Bewerbungen wurde noch **nicht** manuell geprüft. Frontend-Unit-Tests und Build waren bei der Implementierung ebenfalls erfolgreich (7 Tests).
 
 ### Registrierung und Admin-Freigabe – neuer Baustein
 
