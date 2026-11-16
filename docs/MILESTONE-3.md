@@ -18,6 +18,18 @@ The original Milestone 3 administrator slice was manually verified. A subsequent
 
 **New frontend iteration (awaiting manual verification):** `frontend/src/AdminApplications.jsx` shows pending applications, teacher names and their target request. Administrators can approve/reject after a confirmation prompt. The component calls `PATCH /api/v1/applications/{id}/approve` or `/reject`, then re-reads pending applications and requests from the API. On approval the backend sets the request to `filled` and rejects competing pending applications. The React build succeeds; the new administrative UI actions are **not yet manually verified**.
 
+**Additional implementation (not yet browser-tested):** A public registration screen now submits `FormData` to `POST /api/v1/auth/register`. New teacher accounts remain pending until the administrator approves them through `GET /api/v1/teachers/pending` and `PATCH /api/v1/teachers/{id}/approve` from a new admin section. A new backend test verifies registration (201), denied login before approval (403), approval (200) and login after approval (200). The test suite reports **13 passed** locally; the frontend build and existing 7 validation tests also pass. Document upload is deliberately excluded from this first UI because the backend's handling of personal documents needs a security review.
+
+### Registration and approval browser test – pending
+
+1. On the login screen select **Als Lehrperson registrieren**, use a fresh fake email and a test password, then submit.
+2. Confirm the message that approval is required. Logging in before approval should show an error.
+3. Sign in as administrator, find the account under **Lehrpersonen freigeben**, and approve it.
+4. Sign out, then sign in as the new teacher. The teacher dashboard should open.
+5. Optional error test: register the same email twice; the second attempt must display a backend error without creating another account.
+
+Do not claim these browser results as passed until a team member confirms them.
+
 ### End-to-end browser verification — next exercise
 
 1. Admin creates a fresh open request.
