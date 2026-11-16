@@ -100,6 +100,22 @@ def test_invalid_time_range_is_not_persisted(setup_api):
         assert db.exec(select(SubstituteRequest)).all() == []
 
 
+def test_request_with_pending_application_cannot_be_deleted(setup_api):
+    client, engine, subject_id, _, _ = setup_api
+    created = create(client, subject_id)
+    assert created.status_code == 201
+    request_id = created.json()["id"]
+    application = client.post(f"/api/v1/requests/{request_id}/apply")
+    assert application.status_code == 201, application.text
+
+    denied = client.delete(f"/api/v1/requests/{request_id}")
+    assert denied.status_code == 409, denied.text
+    assert client.get(f"/api/v1/requests/{request_id}").status_code == 200
+    with Session(engine) as db:
+        assert db.get(SubstituteRequest, request_id) is not None
+        assert db.get(Application, application.json()["id"]) is not None
+
+
 def test_teacher_registration_requires_admin_approval(setup_api):
     client, _, _, _, _ = setup_api
     email = "newteacher@demo.local"
