@@ -1,5 +1,19 @@
 # Milestone 3 — Frontend/API integration (HS26)
 
+## Aktuelle Erweiterung: Admin-CRUD über die Weboberfläche
+
+Die Admin-Tabelle erhält Aktionen zum **Bearbeiten** (`PATCH /api/v1/requests/{id}`) und **Löschen** (`DELETE /api/v1/requests/{id}`). Ein Bearbeitungsformular übernimmt vorhandene Felder, prüft den Zeitraum und zeigt API-Fehler an. Nach beiden Operationen werden die Daten erneut über die API gelesen. Nicht offene Anfragen zeigen keine Bearbeiten-/Löschen-Buttons; das Backend erzwingt die Regeln unabhängig davon. Löschen wird mit einem Bestätigungsdialog abgesichert; bei vorhandenen Bewerbungen ist ein HTTP-409-Konflikt zu erwarten.
+
+**Prüfstatus:** Frontend implementiert; manuelle Testfälle noch offen:
+
+- [ ] Offene Anfrage bearbeiten, speichern und anschliessend geänderte Werte in der Liste sehen.
+- [ ] Mit `12:00–08:00` im Bearbeitungsformular eine sichtbare Fehlermeldung erhalten; keine Änderung speichern.
+- [ ] Eine offene Anfrage **ohne Bewerbungen** löschen und ihr Verschwinden aus der Liste beobachten.
+- [ ] Eine offene Anfrage **mit Bewerbungen** zu löschen versuchen: sichtbare Backend-Fehlermeldung, Anfrage bleibt bestehen.
+- [ ] Eine besetzte Anfrage betrachten: keine Bearbeiten-/Löschen-Aktion sichtbar.
+
+Die obigen Ergebnisse sind **nicht** als manuell bestanden ausgewiesen. Der HTTP-Status ist im Browser-Netzwerk-Tab nachzutragen.
+
 ## Scope
 
 First integrated **administrator** journey for the EduSub coaching session:
