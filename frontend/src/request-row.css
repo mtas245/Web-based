@@ -1,0 +1,9 @@
+.row-actions { display: flex; align-items: center; gap: 8px; }
+.secondary.small, .danger.small { padding: 8px 10px; font-size: .76rem; }
+.danger { border: 0; border-radius: 9px; background: #fff0f1; color: #ac354e; font-weight: 700; }
+.danger:hover { background: #ffe2e7; }
+.row-error { color: #b42342; font-size: .78rem; line-height: 1.4; white-space: normal; margin: 8px 0 0; max-width: 230px; }
+.edit-row td { background: #fafaff; border-bottom: 1px solid #e5e1f5; }
+.edit-form { padding: 10px 0 15px; white-space: normal; }
+.edit-form .form-error { grid-column: 1 / -1; margin: 0; }
+.edit-form input, .edit-form select, .edit-form textarea { min-width: 140px; }
