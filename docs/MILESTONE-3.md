@@ -37,21 +37,42 @@ npm run dev
 
 Open **http://127.0.0.1:5173** and sign in with the local admin account. The backend is on `http://127.0.0.1:8000`.
 
+## Confirmed manual frontend integration tests — 16 November 2026
+
+The following results were **reported and confirmed by a team member** after running EduSub locally. They are manual browser observations, not automated end-to-end test results. The assistant did not independently inspect browser network traces or the SQLite database.
+
+| Test | Reported result | Conclusion |
+| --- | --- | --- |
+| EduSub login page loads | Successful | React/Vite frontend is accessible |
+| Administrator signs in with valid credentials | Successful | Login and authenticated UI transition work |
+| Dashboard displays existing requests | Successful | Frontend retrieves request data from the API |
+| Administrator creates a new substitute request | Successful | Browser submission through the API works |
+| Newly created request appears in the overview | Successful | The UI re-reads the created request from the backend |
+
+**Overall: 5/5 reported manual tests successful.** This supports the central Milestone 3 integrated administrator journey. The final database persistence is supported by the application architecture and re-read behaviour, but has not been separately verified by directly inspecting SQLite during this test.
+
+### Negative frontend cases — not yet executed
+
+1. Wrong password: show a visible login error and no access to the dashboard.
+2. Invalid time range: enter a start time later than the end time, submit the request and confirm a visible validation error (expected API HTTP 422) with no new record created.
+
+Record actual results here only after a team member confirms them.
+
 ## Coaching demo / verification checklist
 
 - [ ] Start the backend and verify `GET /` displays `EduSub API is running`.
-- [ ] Start the frontend and load the login page.
+- [x] Start the frontend and load the login page (team-confirmed).
 - [ ] Show incorrect password → visible authentication error; correct admin login → dashboard.
-- [ ] Show existing requests and initial statistics.
-- [ ] Create a future-dated request using an existing subject and an allowed grade level.
-- [ ] Confirm the request appears in the dashboard after it is fetched again from the API.
+- [x] Show existing requests in the dashboard (team-confirmed; statistics calculation not separately checked).
+- [x] Create a valid request from the frontend (team-confirmed; exact field values not recorded).
+- [x] Confirm a newly created request appears in the dashboard (team-confirmed).
 - [ ] Confirm the same request appears through Swagger `GET /api/v1/requests/` and, if helpful, inspect the SQLite persistence.
 - [ ] Try an invalid time range and show an API validation error (HTTP 422).
 - [ ] Explain browser → Vite proxy → FastAPI router → service → SQLModel → SQLite → JSON response.
 - [ ] Run `python -m pytest -q` from the backend virtual environment and capture results.
 - [ ] Record actual team contributors, coaching feedback, and outstanding integration tasks.
 
-The boxes above are **not** marked as passed in advance. The frontend has to be checked against your running local backend before presenting it as verified.
+Checked items reflect team-confirmed manual browser results; unchecked items remain pending and must not be reported as verified. The successful admin login is confirmed, but the incorrect-password case in the combined login checklist is still pending.
 
 ## Known limitations / next iteration
 
