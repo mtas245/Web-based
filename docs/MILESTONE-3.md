@@ -12,7 +12,23 @@ First integrated **administrator** journey for the EduSub coaching session:
 
 The browser requests `/api/v1/...`; Vite proxies these paths to FastAPI on `127.0.0.1:8000` in development. FastAPI validates incoming data in Pydantic schemas, uses service logic for business rules and persists changes in the SQLModel/SQLite database.
 
-The original Milestone 3 administrator slice was manually verified. A subsequent frontend iteration adds an initial teacher view for browsing open requests and applying; **that new teacher UI is not yet manually verified**. Administrator approval of teacher applications is still available through Swagger. See [frontend design decisions](FRONTEND-DECISIONS.md).
+The original Milestone 3 administrator slice was manually verified. A subsequent frontend iteration adds an initial teacher view for browsing open requests and applying; the teacher view has since been manually verified as described below. Administrator approval of teacher applications is also available through Swagger. See [frontend design decisions](FRONTEND-DECISIONS.md).
+
+**Subsequent manual confirmation (16 November 2026):** A team member successfully logged in as an approved teacher, viewed open requests, used the class filter, applied for a request and saw the resulting `pending` application. The class filter intentionally offers only classes currently present among open requests. Filled/non-open requests are absent from the teacher list, so there is no application button for them; this is expected.
+
+**New frontend iteration (awaiting manual verification):** `frontend/src/AdminApplications.jsx` shows pending applications, teacher names and their target request. Administrators can approve/reject after a confirmation prompt. The component calls `PATCH /api/v1/applications/{id}/approve` or `/reject`, then re-reads pending applications and requests from the API. On approval the backend sets the request to `filled` and rejects competing pending applications. The React build succeeds; the new administrative UI actions are **not yet manually verified**.
+
+### End-to-end browser verification — next exercise
+
+1. Admin creates a fresh open request.
+2. Approved teacher logs in, applies and sees `pending` under "Meine Bewerbungen".
+3. Admin signs in and sees the application under "Offene Bewerbungen".
+4. Admin chooses **Genehmigen**, confirms and sees the request status change to `filled`.
+5. Teacher signs in again and sees the application status `approved`.
+6. Confirm the filled request is no longer available for new applications.
+7. Negative check: an already decided application must not be approved a second time (backend should reject with 409); do not falsify results before execution.
+
+Capture redacted HTTP status/response evidence from browser DevTools → Network and document the actual observed results.
 
 ## Local run (two terminals)
 
