@@ -1,84 +1,81 @@
-# EduSub frontend: Unterrichtskonzepte und begründete Entscheidungen (HS26)
+# EduSub frontend: Course concepts and justified design decisions (HS26)
 
-## Unterrichtsbezug
+## Connection to the course material
 
-Basis: *07-Frontend-and-API-Integration-HS26*, besonders Folien 8–13 (HTML, CSS, JavaScript und Events), 48–55 (`try/catch/finally`, `fetch`, JSON und Network), 57–63 (Frontend-Alternativen und integrierter Workflow). Die Anhänge *07A-Static-to-Jinja-HS26* und *07B-Frontend-Alternatives-HS26* zeigen alternative Implementierungswege; sie sind optional.
+Source: *07-Frontend-and-API-Integration-HS26*, especially slides 8–13 (HTML, CSS, JavaScript and events), 48–55 (`try/catch/finally`, `fetch`, JSON and network requests), and 57–63 (frontend alternatives and the integrated workflow). The supplementary materials *07A-Static-to-Jinja-HS26* and *07B-Frontend-Alternatives-HS26* present alternative approaches; they are optional.
 
-| Gelerntes Konzept | EduSub-Umsetzung | Warum das sinnvoll ist |
+| Course concept | Implementation in EduSub | Rationale |
 | --- | --- | --- |
-| HTML-Struktur und zugängliche Formulare | Semantische `<form>`, `<label>`, `<input>`, `<select>`, `<button>` und Tabellen in den React-Komponenten | Browser können die Eingaben verstehen; strukturierte Oberflächen sind bedienbarer. |
-| CSS und responsive Layouts | `frontend/src/style.css` mit flexiblen Layouts und Media Queries | Desktop und Mobilgeräte benötigen unterschiedliche Anordnungen. |
-| JavaScript-Ereignisse | `onSubmit`, `onClick`, `onChange` | Benutzereingaben lösen nachvollziehbare Aktionen aus. |
-| Zustandsverwaltung | React `useState` für Formulare, Ladezustände, Listen und Meldungen | UI-Daten ändern sich durch HTTP-Antworten; React hält die Ansicht mit dem Zustand synchron. |
-| API-Aufruf über HTTP/JSON | `frontend/src/api.js` nutzt `fetch`, `JSON.stringify`, HTTP-Methoden und Bearer-Token | Frontend und Backend bleiben getrennt; dieselbe FastAPI-API ist unabhängig mit Swagger testbar. |
-| Fehlerbehandlung | `try/catch/finally`, sichtbare Alerts, deaktivierte Buttons während einer Aktion | Ungültige Eingaben und API-Fehler bleiben für Nutzende verständlich. |
-| Erfolgsnachweis | `POST /requests/` bzw. `POST /requests/{id}/apply`, danach erneutes `GET` | Eine grüne Erfolgsmeldung allein beweist keine Speicherung; serverseitige Daten werden erneut gelesen. |
-| Daten und Berechtigungen | Admin-Ansicht ruft Admin-API auf; Lehrpersonenansicht ruft nur lehrpersonenspezifische Endpunkte auf | Rollenabhängige UI ist benutzerfreundlich; die eigentliche Zugriffsprüfung bleibt zwingend im Backend. |
-| Komponenten | Separate `TeacherDashboard.jsx` für den Lehrpersonen-Workflow | Verantwortlichkeiten bleiben begrenzt; die Sicht ist leichter weiterzuentwickeln und zu testen. |
-| CRUD-Methoden | `RequestRow.jsx` sendet `PATCH` für Änderungen und `DELETE` für das Entfernen einer Anfrage | Die HTTP-Methode macht die beabsichtigte Operation sichtbar. `PATCH` verändert ausgewählte Felder, `DELETE` liefert bei Erfolg HTTP 204 ohne JSON-Antwort. |
+| HTML structure and accessible forms | Semantic `<form>`, `<label>`, `<input>`, `<select>`, `<button>` elements and tables in React components | Browsers can interpret input fields correctly; structured interfaces are easier to use. |
+| CSS and responsive layouts | `frontend/src/style.css` with flexible layouts and media queries | Desktop and mobile devices need different arrangements. |
+| JavaScript events | `onSubmit`, `onClick`, `onChange` | User interactions trigger explicit, traceable operations. |
+| State management | React `useState` for forms, loading states, lists and messages | HTTP responses change UI data; React keeps the view synchronized with state. |
+| HTTP/JSON API calls | `frontend/src/api.js` uses `fetch`, `JSON.stringify`, HTTP methods and bearer tokens | Frontend and backend remain separate; the same FastAPI endpoints can be tested independently through Swagger. |
+| Error handling | `try/catch/finally`, visible alerts, disabled buttons during requests | Invalid input and API errors are understandable to users. |
+| Evidence of persistence | `POST /requests/` or `POST /requests/{id}/apply`, followed by another `GET` | A success message alone does not prove persistence; the saved server-side state is fetched again. |
+| Data and permissions | Admin views call admin endpoints; teacher views use teacher-specific endpoints | A role-specific UI improves usability, but authorization must still be enforced by the backend. |
+| Components | Separate `TeacherDashboard.jsx` for the teacher workflow | Responsibilities are easier to maintain, extend and test. |
+| CRUD methods | `RequestRow.jsx` sends `PATCH` for changes and `DELETE` to remove requests | HTTP methods express intent. `PATCH` updates selected fields; a successful `DELETE` returns HTTP 204 without a JSON body. |
 
-## Warum React/Vite und nicht Jinja oder eine reine statische Seite?
+## Why React/Vite instead of Jinja or a static page?
 
-- **Statische Seite:** Gut für frühe Skizzen, kann aber ohne API-Anbindung keine Stellvertretungen dauerhaft speichern.
-- **Jinja2:** Laut Unterricht ausdrücklich zulässig; wäre sinnvoll für eine kleinere Anwendung mit klassischen Seiten- und Formularwechseln. Hier wären jedoch ein zweiter Darstellungsweg auf dem FastAPI-Server und ein Umbau der bereits funktionierenden React-Oberfläche nötig.
-- **React mit Browser-API:** Wir benötigen wiederholtes Aktualisieren von Listen, Statuswechsel und unterschiedliche Rollenansichten. Die vorhandene React/Vite-Oberfläche kommuniziert bereits mit der dokumentierten REST API. Deshalb behalten wir diesen Weg bei. **React ist eine bewusste Projektentscheidung, keine Pflicht des Moduls.**
-- **NiceGUI:** Das ursprüngliche EduSub aus Advanced Programming diente als fachliche Grundlage. Für dieses Modul wollen wir die Grenze zwischen eigenständigem Browser-Frontend, REST API, Services und Persistenz sichtbar machen.
+- **Static page:** Useful for early sketches, but without an API connection it cannot persist substitute requests.
+- **Jinja2:** Explicitly permitted by the course and suitable for a smaller application with conventional page and form submissions. For EduSub, adopting it now would require a second rendering approach in FastAPI and a rewrite of the working React frontend.
+- **React with the browser API:** EduSub needs repeatedly refreshed lists, changing statuses and distinct role-specific views. The existing React/Vite frontend already communicates with the documented REST API. We therefore retain it. **React is a deliberate project decision, not a module requirement.**
+- **NiceGUI:** The original Advanced Programming EduSub provided the domain foundation. For this module, we want the boundaries between independent browser frontend, REST API, services and persistence to be visible.
 
-## Architektur und konkreter Integrationsablauf
+## Architecture and integration sequence
 
-1. Der Browser öffnet die React-Anwendung auf Port 5173.
-2. Bei `fetch('/api/v1/requests/open')` leitet Vite während der lokalen Entwicklung die Anfrage an FastAPI auf Port 8000 weiter (`frontend/vite.config.js`).
-3. FastAPI prüft Bearer-Token und Lehrerrolle, danach liefern Service und Datenbank nur offene Anfragen.
-4. React zeigt die Antwort als Liste und ermöglicht die Bewerbung per `POST /api/v1/requests/{id}/apply`.
-5. Nach HTTP 201 lädt React offene Anfragen und eigene Bewerbungen erneut (`GET /api/v1/applications/my`).
-6. Ein API-Fehler wird angezeigt; er gilt nicht als erfolgreiche Bewerbung. Zusätzlich prüft das Backend die Berechtigungen und Geschäftsregeln.
+1. The browser opens the React application on port 5173.
+2. In local development, Vite forwards `fetch('/api/v1/requests/open')` to FastAPI on port 8000 (`frontend/vite.config.js`).
+3. FastAPI verifies the bearer token and teacher role; services and the database then return only open requests.
+4. React renders the list and lets teachers apply through `POST /api/v1/requests/{id}/apply`.
+5. After HTTP 201, React reloads open requests and the teacher's own applications (`GET /api/v1/applications/my`).
+6. API errors are displayed and are not treated as successful applications. The backend independently enforces permissions and business rules.
 
-Die bestehende Administrator-Demo (Login → Anfrage erstellen → gespeicherte Anfrage lesen) ist **manuell bestätigt**. Die Lehrpersonen-Demo wurde inzwischen ebenfalls mit einem freigeschalteten Lehrpersonen-Account getestet.
+The original admin demo (login → create request → retrieve saved request) was **manually confirmed**. The teacher demo was also tested using an approved teacher account.
 
-**Statusnachtrag, 16 November 2026:** Die Lehrpersonen-Demo wurde manuell erfolgreich getestet (Login, offene Anfragen, Klassenfilter, Bewerbung und Status `pending`). Der Filter listet absichtlich nur Klassen mit aktuell offenen Anfragen; bereits besetzte Anfragen erscheinen nicht als bewerbbar. Die ergänzte React-Komponente `AdminApplications.jsx` verwendet `GET /applications/pending`, `GET /teachers/` und `PATCH /applications/{id}/approve|reject` und lädt nach der Entscheidung die gespeicherten Daten neu. Dieser Admin-Teil ist noch nicht manuell getestet.
+**Historical status note, 16 November 2026:** The teacher demo was manually verified (login, open requests, grade filter, application and `pending` status). The filter intentionally lists only grades with currently open requests; filled requests have no application action. The additional `AdminApplications.jsx` component calls `GET /applications/pending`, `GET /teachers/` and `PATCH /applications/{id}/approve|reject`, then reloads stored data. At the time of this note, the new admin UI had not yet been manually verified; a later Playwright end-to-end test now covers the approval path.
 
-## Nachweis im Browser (für Coaching und Abgabe)
+## Browser evidence for demonstrations and submission
 
-1. Im Browser DevTools → Network öffnen.
-2. Als genehmigte Lehrperson anmelden; `GET /api/v1/auth/me` und `GET /api/v1/requests/open` prüfen.
-3. Eine offene Stellvertretung wählen und auf **Bewerben** klicken.
-4. Im Network-Tab `POST /api/v1/requests/{id}/apply` (erwartet 201) und den anschliessenden `GET /api/v1/applications/my` prüfen.
-5. Die eigene Bewerbung muss in der Oberfläche erscheinen; ein erneuter Klick auf denselben Auftrag darf keine zweite Bewerbung erzeugen.
-6. Einen Negativfall demonstrieren, z. B. ein Versuch mit fehlender Genehmigung oder eine doppelte Bewerbung. **Erwartete** HTTP-Statuscodes erst nach dem tatsächlichen Test als **bestätigt** dokumentieren.
+1. Open the browser's DevTools → Network tab.
+2. Sign in as an approved teacher; inspect `GET /api/v1/auth/me` and `GET /api/v1/requests/open`.
+3. Select an open substitute request and click **Apply** (the actual UI label is currently in German).
+4. Check `POST /api/v1/requests/{id}/apply` (expected 201) and the subsequent `GET /api/v1/applications/my`.
+5. The teacher's application should appear in the UI; applying to the same request again must not create a duplicate.
+6. Demonstrate a negative case, such as an unapproved account or duplicate application. Mark **expected** HTTP statuses as **confirmed** only after observing them.
 
-Keine echten Passwörter, JWTs oder persönlichen Lehrpersonen-Dokumente in Screenshots/Commits speichern.
+Never store real passwords, JWTs or personal teacher documents in screenshots or commits.
 
-## Grenzen und weitere Arbeit
+## Limitations and further work
 
-### Administrator: Anfragen bearbeiten und löschen
+### Administrator: editing and deleting requests
 
-Die Anfragen-Tabelle enthält für offene Anfragen eine Bearbeiten- und eine Löschen-Aktion. Beim Bearbeiten werden die gespeicherten Felder in ein HTML-Formular übernommen. `validateTimeRange` prüft beide Uhrzeiten vor dem Speichern; zusätzlich validiert FastAPI den Payload. `PATCH /api/v1/requests/{id}` aktualisiert die bestehende Anfrage, danach holt React die gesamte Liste erneut über `GET /requests/`. Beim Löschen fragt `window.confirm` nach und sendet `DELETE /api/v1/requests/{id}`; der API-Client behandelt HTTP 204 ohne JSON-Parsing.
+The admin request table provides **Edit** and **Delete** actions for open requests. Editing pre-fills an HTML form with saved values. `validateTimeRange` checks the lesson times before submission; FastAPI also validates the payload. `PATCH /api/v1/requests/{id}` updates the record, and React then reloads the full list through `GET /requests/`. Deletion requires a `window.confirm` confirmation and sends `DELETE /api/v1/requests/{id}`; the API client handles HTTP 204 without parsing JSON.
 
-**Entscheidung:** `PATCH` statt `PUT`, weil eine bestehende Ressource gezielt geändert wird. Ein Klick auf einen Button allein gibt keine Berechtigung: Das Backend verweigert Änderungen an nicht offenen Anfragen und das Löschen bei vorhandenen Bewerbungen (Konflikt, HTTP 409). Die Oberfläche blendet für besetzte Anfragen die Aktionen aus, zeigt aber auch Serverfehler sichtbar an. Während eines Requests sind die Buttons gesperrt. Die Komponente ist getrennt von `main.jsx`, damit Tabellenansicht, Formularzustand und HTTP-Aktionen gekapselt bleiben.
+**Decision:** We use `PATCH` rather than `PUT` because we are updating fields of an existing resource. Displaying a button does not grant permission: the backend rejects edits to non-open requests and deletion when applications exist (HTTP 409 conflict). The UI hides these actions for filled requests, displays server-side errors and disables buttons while requests are in progress. The logic lives in a separate component rather than enlarging `main.jsx`.
 
-**Nachweisstatus (16. November 2026):** Der gemeinsame Browserdurchlauf für vier Prüfungen wurde vom Team als bestanden bestätigt: offene Anfrage ändern, ungültigen Zeitraum ablehnen, offene Anfrage ohne Bewerbungen löschen und Aktionen für besetzte Anfragen ausblenden. Der gesonderte HTTP-409-Konfliktfall bei bestehenden Bewerbungen wurde noch **nicht** manuell geprüft. Frontend-Unit-Tests und Build waren bei der Implementierung ebenfalls erfolgreich (7 Tests).
+**Evidence, 16 November 2026:** The team confirmed four successful manual browser checks: edit an open request, reject an invalid time range, delete an open request without applications, and hide editing/deletion controls for filled requests. The separate **manual** HTTP-409 deletion-conflict scenario was not performed; automated API and Playwright tests cover this rule. The seven frontend unit tests and the build also passed.
 
-**Teststrategie:** Die bestehenden Pydantic-/FastAPI-Tests prüfen Eingabevalidierung, Geschäftsregeln und Datenbankzustand schnell und isoliert; ein zusätzlicher Backend-Test sichert jetzt die Löschsperre bei vorhandener Bewerbung ab (HTTP 409, Daten bleiben erhalten). Playwright ergänzt als Browser-End-to-End-Test die realen Klicks und Statuswechsel über React, Vite-Proxy, FastAPI und SQLite. Der Playwright-Test verwendet fiktive Konten und eine temporäre Datenbank, um reproduzierbar zu sein. Nach Korrektur eines zu fragilen Formular-Selektors bestätigte das Team einen erfolgreichen Windows-Browserdurchlauf am 16. November 2026 (`1 passed`, 11.1 Sekunden). In der Entwicklungs-Sandbox selbst verhindert eine Systemsperre den Chromium-Start. **Lerneffekt:** UI-Tests sollten stabile, semantische oder direkt zugeordnete Selektoren verwenden, statt die Tiefe der HTML-Verschachtelung vorauszusetzen.
+**Test strategy:** Pydantic/FastAPI tests check validation, business rules and database state quickly in isolation. An additional API test verifies that a request with an application cannot be deleted (HTTP 409, both records preserved). Playwright adds actual browser clicks and state changes across React, the Vite proxy, FastAPI and SQLite, using fictional accounts and a temporary database. After fixing a brittle form selector, a team member confirmed a successful Windows browser test on 16 November 2026 (`1 passed`, 11.1 seconds). Chromium could not start in the assistant's sandbox. **Lesson learned:** UI tests should use stable semantic or component-specific selectors instead of assuming a particular depth of HTML nesting.
 
-### Registrierung und Admin-Freigabe – neuer Baustein
+### Teacher registration and administrator approval
 
-Neu ergänzt wurden `frontend/src/RegisterForm.jsx` und `frontend/src/AdminTeacherApprovals.jsx`:
+The added components are `frontend/src/RegisterForm.jsx` and `frontend/src/AdminTeacherApprovals.jsx`:
 
-1. Ein HTML-Formular nimmt Name, E-Mail, Telefonnummer und Passwort auf. Der Browser prüft die Passwortbestätigung sowie die minimale Länge.
-2. `FormData` überträgt die Eingaben als `multipart/form-data` an `POST /api/v1/auth/register`. Ein JSON-Body wäre falsch, da das vorhandene FastAPI-Interface `Form(...)` erwartet.
-3. Das Backend speichert die neue Lehrperson mit `is_approved = false`; die Oberfläche zeigt **noch keine erfolgreiche Anmeldung** an.
-4. `POST /api/v1/auth/login` verweigert nicht freigegebenen Lehrpersonen den Zugriff (HTTP 403, durch Backend-Test geprüft).
-5. Der Administrator ruft `GET /api/v1/teachers/pending` auf, bestätigt die Freigabe und sendet `PATCH /api/v1/teachers/{id}/approve`.
-6. Danach können genehmigte Lehrpersonen die bestehende React-Lehrpersonenansicht verwenden.
+1. An HTML form collects name, email, phone number and password. The browser checks password confirmation and minimum length.
+2. `FormData` submits `multipart/form-data` to `POST /api/v1/auth/register`. Sending JSON would violate the existing FastAPI contract, which expects `Form(...)` fields.
+3. The backend creates the teacher with `is_approved = false`; the UI does **not** claim the account can already sign in.
+4. `POST /api/v1/auth/login` rejects unapproved teachers (HTTP 403, covered by a backend test).
+5. An administrator uses `GET /api/v1/teachers/pending` and `PATCH /api/v1/teachers/{id}/approve` to approve the account.
+6. Approved teachers can then access the existing React teacher dashboard.
 
-**Unterrichtsbezug:** HTML-Formulare, JavaScript-Ereignisse, `fetch`, FormData statt JSON je nach API-Vertrag, HTTP-Statuscodes, Fehlermeldungen, rollenbasierte Berechtigungen und Persistenz. React steuert die Anzeige; die Autorisierung bleibt verbindlich in FastAPI.
+**Course connection:** HTML forms, JavaScript events, `fetch`, choosing FormData or JSON according to the API contract, HTTP status codes, error feedback, role-based permissions and persistence. React manages presentation; FastAPI remains responsible for authorization.
 
-**Bewusste Einschränkung:** Dokument-Uploads und Fächerauswahl im öffentlichen Registrierungsformular sind noch nicht enthalten. Der bestehende Backend-Upload benötigt vor Nutzung mit echten persönlichen Unterlagen eine Sicherheitsprüfung (Dateizugriff, Validierung und Speicherung). Nur fiktive Testkonten verwenden.
+**Intentional limitation:** Public registration does not yet include document uploads or subject selection. The existing backend document-upload implementation requires a security review covering access, validation and storage before real personal documents are accepted. Use only fictional test accounts.
 
-- Frontend-Build und 7 bestehende Unit-Tests bestanden; Backend mit neuem Registrierungs-Freigabe-Test: **13 bestanden**. Der neue Browserablauf wurde anschliessend **von einem Teammitglied manuell bestätigt** (Registrierung, Admin-Freigabe und Anmeldung).
-
-- Lehrpersonenregistrierung und -freigabe sind jetzt im React-Frontend umgesetzt, müssen aber noch im Browser getestet werden.
-- Der Admin kann Bewerbungen bereits über Swagger genehmigen, aber noch nicht über die React-Oberfläche.
-- Für komplexere UI ist eine weitere Aufteilung des derzeit grossen `main.jsx` in Komponenten sinnvoll.
-- Automatisierte Browser-End-to-End-Tests, barrierearme Bedienung und Tests auf Mobilgeräten fehlen noch.
-- Die Teambeiträge und Entscheidungen aus dem Coaching sind durch die tatsächlichen Teammitglieder zu ergänzen.
+- The frontend build and seven existing unit tests passed. At the time of the registration change, the backend suite passed 13 tests; a team member subsequently confirmed the registration → admin approval → teacher login browser workflow.
+- The large `main.jsx` can be split into smaller components as the interface grows.
+- Additional accessibility reviews, mobile-device tests and a broader range of browser error scenarios remain outstanding.
+- Actual individual contributions and coaching decisions must be supplied by the team.
