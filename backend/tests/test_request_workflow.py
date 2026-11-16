@@ -100,6 +100,32 @@ def test_invalid_time_range_is_not_persisted(setup_api):
         assert db.exec(select(SubstituteRequest)).all() == []
 
 
+def test_teacher_registration_requires_admin_approval(setup_api):
+    client, _, _, _, _ = setup_api
+    email = "newteacher@demo.local"
+    password = "TestPassword123!"
+    register = client.post("/api/v1/auth/register", data={
+        "full_name": "New Demo Teacher",
+        "email": email,
+        "phone": "+41000000000",
+        "password": password,
+    })
+    assert register.status_code == 201, register.text
+    assert register.json()["is_approved"] is False
+
+    pending_login = client.post("/api/v1/auth/login", data={"username": email, "password": password})
+    assert pending_login.status_code == 403, pending_login.text
+
+    teacher_id = register.json()["id"]
+    approval = client.patch(f"/api/v1/teachers/{teacher_id}/approve")
+    assert approval.status_code == 200, approval.text
+    assert approval.json()["is_approved"] is True
+
+    approved_login = client.post("/api/v1/auth/login", data={"username": email, "password": password})
+    assert approved_login.status_code == 200, approved_login.text
+    assert approved_login.json()["role"] == "teacher"
+
+
 def test_application_approval_workflow(setup_api):
     client, engine, subject_id, current_teacher, second_teacher = setup_api
     request = create(client, subject_id)
