@@ -16,7 +16,9 @@ test('Admin → Lehrperson → Bewerbung → Löschkonflikt → Genehmigung', as
   await signIn(page, 'admin@e2e.test', 'E2eAdmin123!')
   await expect(page.getByRole('heading', { name: /Guten Tag/ })).toBeVisible()
   await page.getByRole('button', { name: /Neue Anfrage/ }).click()
-  const createForm = page.getByRole('heading', { name: 'Neue Stellvertretungsanfrage' }).locator('..').locator('..').locator('form')
+  // Select the actual form instead of relying on the number of wrapping <div>s.
+  const createForm = page.locator('section.form-card form.request-form')
+  await expect(createForm).toBeVisible()
   await createForm.getByLabel('Datum').fill(lessonDate)
   await createForm.getByLabel('Klassenstufe').selectOption('3a')
   await createForm.getByLabel('Fach').selectOption({ label: 'E2E Mathematik' })
@@ -48,9 +50,11 @@ test('Admin → Lehrperson → Bewerbung → Löschkonflikt → Genehmigung', as
 
   // The application exists; even an admin may not delete the open request.
   page.once('dialog', (dialog) => dialog.accept())
-  const adminRequests = page.getByRole('heading', { name: 'Stellvertretungsanfragen' }).locator('..').locator('..')
+  const adminRequests = page.locator('section.table-card').filter({
+    has: page.getByRole('heading', { name: 'Stellvertretungsanfragen' }),
+  })
   // Only one request exists in this isolated test database.
-  const matchingRow = adminRequests.locator('tbody tr').filter({ has: page.getByRole('button', { name: 'Löschen' }) }).first()
+  const matchingRow = adminRequests.locator('tbody tr').filter({ has: page.locator('button.danger') }).first()
   await matchingRow.getByRole('button', { name: 'Löschen' }).click()
   await expect(matchingRow.getByRole('alert')).toBeVisible()
   const stillThere = await page.request.get(`/api/v1/requests/${request.id}`, {
