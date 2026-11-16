@@ -58,6 +58,8 @@ Die Anfragen-Tabelle enthält für offene Anfragen eine Bearbeiten- und eine Lö
 
 **Nachweisstatus (16. November 2026):** Der gemeinsame Browserdurchlauf für vier Prüfungen wurde vom Team als bestanden bestätigt: offene Anfrage ändern, ungültigen Zeitraum ablehnen, offene Anfrage ohne Bewerbungen löschen und Aktionen für besetzte Anfragen ausblenden. Der gesonderte HTTP-409-Konfliktfall bei bestehenden Bewerbungen wurde noch **nicht** manuell geprüft. Frontend-Unit-Tests und Build waren bei der Implementierung ebenfalls erfolgreich (7 Tests).
 
+**Teststrategie:** Die bestehenden Pydantic-/FastAPI-Tests prüfen Eingabevalidierung, Geschäftsregeln und Datenbankzustand schnell und isoliert; ein zusätzlicher Backend-Test sichert jetzt die Löschsperre bei vorhandener Bewerbung ab (HTTP 409, Daten bleiben erhalten). Playwright ergänzt als Browser-End-to-End-Test die realen Klicks und Statuswechsel über React, Vite-Proxy, FastAPI und SQLite. Der Playwright-Test verwendet fiktive Konten und eine temporäre Datenbank, um reproduzierbar zu sein. Seine erste Ausführung blieb wegen einer Chromium-Sandbox-Sperre in der Entwicklungsumgebung blockiert; eine erfolgreiche lokale Ausführung steht aus.
+
 ### Registrierung und Admin-Freigabe – neuer Baustein
 
 Neu ergänzt wurden `frontend/src/RegisterForm.jsx` und `frontend/src/AdminTeacherApprovals.jsx`:
