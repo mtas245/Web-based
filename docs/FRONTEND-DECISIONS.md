@@ -49,7 +49,24 @@ Keine echten Passwörter, JWTs oder persönlichen Lehrpersonen-Dokumente in Scre
 
 ## Grenzen und weitere Arbeit
 
-- Lehrpersonenregistrierung und -freigabe laufen noch über Swagger; entsprechende Screens folgen später.
+### Registrierung und Admin-Freigabe – neuer Baustein
+
+Neu ergänzt wurden `frontend/src/RegisterForm.jsx` und `frontend/src/AdminTeacherApprovals.jsx`:
+
+1. Ein HTML-Formular nimmt Name, E-Mail, Telefonnummer und Passwort auf. Der Browser prüft die Passwortbestätigung sowie die minimale Länge.
+2. `FormData` überträgt die Eingaben als `multipart/form-data` an `POST /api/v1/auth/register`. Ein JSON-Body wäre falsch, da das vorhandene FastAPI-Interface `Form(...)` erwartet.
+3. Das Backend speichert die neue Lehrperson mit `is_approved = false`; die Oberfläche zeigt **noch keine erfolgreiche Anmeldung** an.
+4. `POST /api/v1/auth/login` verweigert nicht freigegebenen Lehrpersonen den Zugriff (HTTP 403, durch Backend-Test geprüft).
+5. Der Administrator ruft `GET /api/v1/teachers/pending` auf, bestätigt die Freigabe und sendet `PATCH /api/v1/teachers/{id}/approve`.
+6. Danach können genehmigte Lehrpersonen die bestehende React-Lehrpersonenansicht verwenden.
+
+**Unterrichtsbezug:** HTML-Formulare, JavaScript-Ereignisse, `fetch`, FormData statt JSON je nach API-Vertrag, HTTP-Statuscodes, Fehlermeldungen, rollenbasierte Berechtigungen und Persistenz. React steuert die Anzeige; die Autorisierung bleibt verbindlich in FastAPI.
+
+**Bewusste Einschränkung:** Dokument-Uploads und Fächerauswahl im öffentlichen Registrierungsformular sind noch nicht enthalten. Der bestehende Backend-Upload benötigt vor Nutzung mit echten persönlichen Unterlagen eine Sicherheitsprüfung (Dateizugriff, Validierung und Speicherung). Nur fiktive Testkonten verwenden.
+
+- Frontend-Build und 7 bestehende Unit-Tests bestanden; Backend mit neuem Registrierungs-Freigabe-Test: **13 bestanden**. Der neue Browserablauf ist **noch nicht manuell bestätigt**.
+
+- Lehrpersonenregistrierung und -freigabe sind jetzt im React-Frontend umgesetzt, müssen aber noch im Browser getestet werden.
 - Der Admin kann Bewerbungen bereits über Swagger genehmigen, aber noch nicht über die React-Oberfläche.
 - Für komplexere UI ist eine weitere Aufteilung des derzeit grossen `main.jsx` in Komponenten sinnvoll.
 - Automatisierte Browser-End-to-End-Tests, barrierearme Bedienung und Tests auf Mobilgeräten fehlen noch.
