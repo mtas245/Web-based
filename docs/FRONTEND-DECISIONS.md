@@ -67,7 +67,7 @@ The request table now has a text search and status/grade filters. For the modest
 
 **Course concepts:** User-centred design, visibility of system status, recognition rather than recall, React props/state, conditional rendering, functional data transformation and API-first separation of concerns. No notification or scheduling job has been introduced: the overview is a live summary when the page loads or the underlying data is refreshed, not a push-notification service.
 
-**Verification:** Pure-function tests and the production frontend build are part of this change. A new Playwright scenario checks the task overview, filtering and reset behavior with an isolated seeded backend; its **local browser result is still pending team confirmation**.
+**Verification (18 November 2026):** Two new pure-function tests passed, bringing the frontend suite to **9 passed**, and the production build succeeded. A new Playwright scenario checks the task overview, combined filters and reset behavior with an isolated seeded backend. The team subsequently confirmed **3 Playwright tests passed in 11.2 seconds** on Windows. This is a local team-reported run; separate manual usability and accessibility checks are still pending.
 
 ### Responsive administrator dashboard (iteration after Milestone 3 integration)
 
