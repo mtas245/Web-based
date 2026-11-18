@@ -4,9 +4,9 @@
 
 The administrator dashboard now includes a task-oriented overview showing open lessons scheduled within seven days, pending teacher applications and pending teacher-account approvals. These values come from existing API-backed lists; the overview links to the corresponding management sections. The request table also supports client-side searching and filtering by status and grade without introducing another endpoint.
 
-This is a deliberately small extension of the integrated workflow, not a complete calendar or notification system. The design alternatives, user-centred rationale and API trade-offs are recorded in [Frontend Decisions](FRONTEND-DECISIONS.md). New unit tests cover date selection and combined filters; a further Playwright scenario checks the UI. **Manual and browser-test confirmation of this new feature is still outstanding.**
+This is a deliberately small extension of the integrated workflow, not a complete calendar or notification system. The design alternatives, user-centred rationale and API trade-offs are recorded in [Frontend Decisions](FRONTEND-DECISIONS.md). Two new unit tests cover date selection and combined filters; the frontend suite now reports **9 passed** and its production build succeeds. **Team-confirmed local Playwright run, 18 November 2026: all 3 tests passed in 11.2 seconds**, including the new action-center and request-filter scenario. This is a team-reported terminal result, not a CI run. A separate manual usability review of the new feature is still outstanding.
 
-Suggested local checks:
+Suggested manual checks (not yet individually reported as completed):
 
 - [ ] Create an open request within the next seven days; see its grade, subject and date in the action center.
 - [ ] Apply as a teacher; after returning as administrator, check that the pending-application count reflects the saved application.
