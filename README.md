@@ -1,6 +1,6 @@
 # EduSub — Web-based Application
 
-**Latest frontend iteration:** The administrator dashboard adds an API-backed action center (upcoming open lessons, pending applications and teacher approvals) and client-side search/status/grade filters for saved requests. The implementation reuses existing API contracts and records the alternatives and trade-offs in [Frontend Decisions](docs/FRONTEND-DECISIONS.md). Automated regression coverage has been added; the new browser scenario is awaiting local confirmation.
+**Latest frontend iteration (team-confirmed, 18 November 2026):** The administrator dashboard adds an API-backed action center (upcoming open lessons, pending applications and teacher approvals) and client-side search/status/grade filters for saved requests. The implementation reuses existing API contracts and records the alternatives and trade-offs in [Frontend Decisions](docs/FRONTEND-DECISIONS.md). The frontend unit suite reports **9 passed**, and a team member confirmed **3 Playwright tests passed in 11.2 seconds**, including the new UI scenario. A separate manual usability review remains outstanding.
 
 > Substitute Teacher Coordination Platform  
 > FHNW — Web-based Applications (HS26) | Dr. Devid Montecchiari
