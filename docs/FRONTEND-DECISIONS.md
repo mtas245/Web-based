@@ -50,6 +50,25 @@ Never store real passwords, JWTs or personal teacher documents in screenshots or
 
 ## Limitations and further work
 
+### Task-oriented administrator dashboard and request filtering
+
+**User need:** The earlier overview showed totals and data tables, but administrators still had to scan several sections to identify upcoming uncovered lessons, pending applications and teacher approvals. A useful dashboard should make the next actions recognizable without hiding the underlying data.
+
+**Chosen solution:** `AdminActionCenter.jsx` presents (1) open substitute requests scheduled within the next seven calendar days, (2) pending applications and (3) pending teacher registrations. Its links jump to existing page sections. Upcoming lessons are derived from the requests already loaded by the admin API. The application and teacher-approval components report their currently loaded counts to the parent via React state callbacks, so no extra HTTP requests or new backend endpoints are required. `dashboard-utils.js` contains pure date and filter functions with unit tests.
+
+The request table now has a text search and status/grade filters. For the modest local dataset, `filterRequests` filters the already retrieved list in React; the server still owns authorization, persistence and business rules. Summary statistics and task counts are based on **all** records, not the filtered subset. Data is refreshed after existing create/update/delete/approval actions.
+
+| Alternative | Advantages | Trade-off / decision |
+| --- | --- | --- |
+| Full calendar | Rich scheduling and date navigation | More complexity and new UI dependencies; deferred |
+| Dedicated backend task-summary endpoint | Efficient for large datasets and multiple clients | Extra API contract and backend work; unnecessary for current scope |
+| Duplicate API calls within the overview | Independent component | Avoided because existing admin components already fetch pending records |
+| Client-side summary and filters | Fast to implement, uses existing REST contracts, easy to test | **Selected** for the current dataset; server-side filtering would be better at large scale |
+
+**Course concepts:** User-centred design, visibility of system status, recognition rather than recall, React props/state, conditional rendering, functional data transformation and API-first separation of concerns. No notification or scheduling job has been introduced: the overview is a live summary when the page loads or the underlying data is refreshed, not a push-notification service.
+
+**Verification:** Pure-function tests and the production frontend build are part of this change. A new Playwright scenario checks the task overview, filtering and reset behavior with an isolated seeded backend; its **local browser result is still pending team confirmation**.
+
 ### Responsive administrator dashboard (iteration after Milestone 3 integration)
 
 **Problem:** The initial admin layout used a fixed desktop sidebar, three statistic columns, and wide tables. At phone widths, crowded controls and horizontal scrolling reduced readability, particularly for request editing.
