@@ -6,11 +6,16 @@ import TeacherDashboard from './TeacherDashboard'
 import AdminApplications from './AdminApplications'
 import RegisterForm from './RegisterForm'
 import AdminTeacherApprovals from './AdminTeacherApprovals'
+import AdminActionCenter from './AdminActionCenter'
+import RequestFilters from './RequestFilters'
+import { filterRequests } from './dashboard-utils'
 import RequestRow from './RequestRow'
 import './style.css'
 import './responsive-admin.css'
+import './admin-workflow.css'
 
 const initialForm = { date: '', grade_level: '', subject_id: '', start: '', end: '', note: '' }
+const initialFilters = { query: '', status: 'all', grade: 'all' }
 
 function App() {
   const [token, setToken] = useState(() => sessionStorage.getItem('edusub_token') || '')
@@ -30,12 +35,17 @@ function App() {
   const [teacherRequests, setTeacherRequests] = useState([])
   const [teacherApplications, setTeacherApplications] = useState([])
   const [showRegistration, setShowRegistration] = useState(false)
+  const [pendingApplicationsCount, setPendingApplicationsCount] = useState(null)
+  const [pendingTeachersCount, setPendingTeachersCount] = useState(null)
+  const [requestFilters, setRequestFilters] = useState(initialFilters)
 
   function signOut() {
     sessionStorage.removeItem('edusub_token')
     setToken('')
     setUser(null)
     setRequests([])
+    setPendingApplicationsCount(null)
+    setPendingTeachersCount(null)
     setError('')
     setSuccess('')
   }
@@ -143,6 +153,7 @@ function App() {
   }
 
   const subjectName = (id) => subjects.find((subject) => subject.id === id)?.name || `Fach #${id}`
+  const visibleRequests = filterRequests(requests, requestFilters, subjectName)
   const openCount = requests.filter((request) => request.status === 'open').length
   const filledCount = requests.filter((request) => request.status === 'filled').length
   const today = new Date().toLocaleDateString('en-CA')
@@ -193,11 +204,12 @@ function App() {
     <div className="main-column"><header className="topbar"><div className="mobile-brand">EduSub</div><span className="topbar-caption">Stellvertretungsmanagement</span><button className="ghost" onClick={signOut}>Abmelden ↗</button></header>
       <main className="content"><div className="page-heading"><div><span className="eyebrow dark">ADMIN-DASHBOARD</span><h1>Guten Tag, {user.full_name?.split(' ')[0] || 'Admin'} <span className="wave">👋</span></h1><p className="muted">Hier hast du alle Stellvertretungsanfragen im Blick.</p></div><button className="primary" onClick={() => { setShowForm(true); setError(''); setSuccess(''); setFormError('') }}>＋ Neue Anfrage</button></div>
       <section className="stats"><div className="stat"><span>Anfragen gesamt</span><strong>{requests.length}</strong><small>Alle erfassten Anfragen</small></div><div className="stat"><span>Offene Anfragen</span><strong>{openCount}</strong><small>Noch nicht besetzt</small></div><div className="stat"><span>Besetzte Anfragen</span><strong>{filledCount}</strong><small>Erfolgreich vermittelt</small></div></section>
+      <AdminActionCenter requests={requests} pendingApplications={pendingApplicationsCount} pendingTeachers={pendingTeachersCount} subjectName={subjectName} />
       {error && <p className="alert error" role="alert">{error}</p>}{success && <p className="alert success" role="status">{success}</p>}
       {showForm && <section className="form-card"><div className="card-heading"><div><h2>Neue Stellvertretungsanfrage</h2><p className="muted">Die Anfrage wird direkt über die REST API gespeichert.</p></div><button className="icon-button" aria-label="Formular schliessen" onClick={() => setShowForm(false)}>✕</button></div><form onSubmit={handleCreate} className="request-form"><label>Datum<input type="date" min={today} value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} required /></label><label>Klassenstufe<select value={form.grade_level} onChange={(event) => setForm({ ...form, grade_level: event.target.value })} required><option value="">Bitte wählen</option>{grades.map((grade) => <option key={grade} value={grade}>{grade}</option>)}</select></label><label>Fach<select value={form.subject_id} onChange={(event) => setForm({ ...form, subject_id: event.target.value })} required><option value="">Bitte wählen</option>{subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select></label><div className="time-row"><label>Von<input type="time" value={form.start} onChange={(event) => { setForm({ ...form, start: event.target.value }); setFormError('') }} /></label><label>Bis<input type="time" value={form.end} onChange={(event) => { setForm({ ...form, end: event.target.value }); setFormError('') }} /></label></div><label className="wide">Bemerkung (optional)<textarea rows="3" maxLength="1000" value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} placeholder="Wichtige Informationen zur Lektion …" /></label>{formError && <p className="alert error form-error" role="alert">{formError}</p>}<div className="form-actions"><button type="button" className="secondary" onClick={() => setShowForm(false)}>Abbrechen</button><button className="primary" disabled={busy || !subjects.length}>{busy ? 'Speichert …' : 'Anfrage erstellen →'}</button></div></form>{!subjects.length && <p className="hint">Keine Fächer vorhanden. Bitte zuerst einmalig im Swagger als Admin <code>POST /api/v1/subjects/seed</code> ausführen.</p>}</section>}
-      <AdminApplications token={token} requests={requests} onRequestsChanged={refreshRequests} />
-      <AdminTeacherApprovals token={token} />
-      <section className="table-card responsive-request-card"><div className="card-heading"><div><h2>Stellvertretungsanfragen</h2><p className="muted">Aktuelle Daten aus dem Backend · offene Anfragen bearbeiten oder löschen</p></div><button className="secondary" onClick={async () => { setError(''); try { await refreshRequests() } catch (err) { setError(err.message) } }}>↻ Aktualisieren</button></div><div className="table-scroll" tabIndex={0} role="region" aria-label="Stellvertretungsanfragen-Tabelle"><table><thead><tr><th>DATUM</th><th>KLASSE</th><th>FACH</th><th>ZEIT</th><th>STATUS</th><th>AKTIONEN</th></tr></thead><tbody>{requests.map((request) => <RequestRow key={request.id} request={request} token={token} grades={grades} subjects={subjects} subjectName={subjectName} onChanged={refreshRequests} />)}</tbody></table></div>{!requests.length && <div className="empty">Noch keine Stellvertretungsanfragen vorhanden. Erstelle deine erste Anfrage.</div>}</section>
+      <AdminApplications token={token} requests={requests} onRequestsChanged={refreshRequests} onPendingCountChange={setPendingApplicationsCount} />
+      <div id="pending-teachers"><AdminTeacherApprovals token={token} onPendingCountChange={setPendingTeachersCount} /></div>
+      <section id="requests-list" className="table-card responsive-request-card"><div className="card-heading"><div><h2>Stellvertretungsanfragen</h2><p className="muted">Aktuelle Daten aus dem Backend · offene Anfragen bearbeiten oder löschen</p></div><button className="secondary" onClick={async () => { setError(''); try { await refreshRequests() } catch (err) { setError(err.message) } }}>↻ Aktualisieren</button></div><RequestFilters value={requestFilters} onChange={setRequestFilters} grades={grades} count={visibleRequests.length} total={requests.length} /><div className="table-scroll" tabIndex={0} role="region" aria-label="Stellvertretungsanfragen-Tabelle"><table><thead><tr><th>DATUM</th><th>KLASSE</th><th>FACH</th><th>ZEIT</th><th>STATUS</th><th>AKTIONEN</th></tr></thead><tbody>{visibleRequests.map((request) => <RequestRow key={request.id} request={request} token={token} grades={grades} subjects={subjects} subjectName={subjectName} onChanged={refreshRequests} />)}</tbody></table></div>{!requests.length ? <div className="empty">Noch keine Stellvertretungsanfragen vorhanden. Erstelle deine erste Anfrage.</div> : !visibleRequests.length && <div className="empty">Keine Anfragen passen zu den gewählten Filtern.</div>}</section>
       <footer className="footer">EduSub · Integrationsdemo · React + FastAPI + SQLite</footer>
       </main>
     </div>
