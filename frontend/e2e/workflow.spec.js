@@ -75,3 +75,32 @@ test('Admin → Lehrperson → Bewerbung → Löschkonflikt → Genehmigung', as
   await expect(page.getByText('● Genehmigt')).toBeVisible()
   await expect(page.locator('.teacher-request').filter({ hasText: marker })).toHaveCount(0)
 })
+
+test('Administrator dashboard adapts to desktop, tablet and mobile widths', async ({ page }) => {
+  await signIn(page, 'admin@e2e.test', 'E2eAdmin123!')
+  await expect(page.getByRole('heading', { name: /Guten Tag/ })).toBeVisible()
+
+  await page.getByRole('button', { name: /Neue Anfrage/ }).click()
+  const form = page.locator('section.form-card form.request-form')
+  const date = new Date()
+  date.setDate(date.getDate() + 7)
+  await form.getByLabel('Datum').fill(date.toISOString().slice(0, 10))
+  await form.getByLabel('Klassenstufe').selectOption('3a')
+  await form.getByLabel('Fach').selectOption({ label: 'E2E Mathematik' })
+  await form.getByRole('button', { name: /Anfrage erstellen/ }).click()
+  await expect(page.getByText('Stellvertretungsanfrage erfolgreich erstellt', { exact: false })).toBeVisible()
+
+  for (const width of [1440, 768, 375]) {
+    await page.setViewportSize({ width, height: 850 })
+    await expect(page.getByRole('button', { name: /Neue Anfrage/ })).toBeVisible()
+    await expect(page.locator('.responsive-request-card tbody tr').first()).toBeVisible()
+    const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    expect(pageWidth, `Unexpected page-level horizontal overflow at ${width}px`).toBeLessThanOrEqual(width)
+  }
+
+  await page.setViewportSize({ width: 375, height: 850 })
+  const rowLayout = await page.locator('.responsive-request-card tbody tr').first().evaluate(
+    (row) => getComputedStyle(row).display,
+  )
+  expect(rowLayout).toBe('block')
+})
