@@ -50,6 +50,25 @@ Never store real passwords, JWTs or personal teacher documents in screenshots or
 
 ## Limitations and further work
 
+### Responsive administrator dashboard (iteration after Milestone 3 integration)
+
+**Problem:** The initial admin layout used a fixed desktop sidebar, three statistic columns, and wide tables. At phone widths, crowded controls and horizontal scrolling reduced readability, particularly for request editing.
+
+**Chosen implementation:** Keep native CSS Grid and Flexbox and add focused media queries in `frontend/src/responsive-admin.css`. At widths up to 720 px, statistic cards stack vertically, forms and action buttons adapt to available space, and the top bar uses a compact layout. At widths up to 600 px, **only the main substitute-request table** becomes individual cards. Each cell retains a `data-label` for a visible field name; the actual table headers remain in the document for assistive technologies. Other administration tables retain horizontal scrolling for now. Visible keyboard focus and reduced-motion preferences are also supported.
+
+**Alternatives considered:**
+
+| Alternative | Benefit | Why it was not selected for this iteration |
+| --- | --- | --- |
+| Bootstrap | Ready-made responsive grid and components | Additional CSS conventions and dependency for a small existing UI |
+| Tailwind CSS | Flexible utility classes | New build configuration and a larger markup refactor without a clear current benefit |
+| Make every table horizontally scrollable | Smallest code change | The request table's frequent actions remain difficult to read and use on phones |
+| CSS Grid, Flexbox and media queries | Native browser support, no new framework | **Selected:** matches existing code and the course's frontend concepts |
+
+**Trade-off:** The new card presentation requires a separate responsive stylesheet and `data-label` attributes. It avoids changing API behavior or replacing React components. A real mobile-browser usability review remains necessary; a Playwright viewport regression scenario has been added but is **not yet independently run or confirmed** at the time of this change.
+
+**Course connection:** CSS box model, responsive layouts, Grid/Flexbox, media queries, semantic HTML, progressive enhancement and user-centred design. Verification should include a 1440 px desktop, 768 px tablet and 375 px mobile viewport, plus keyboard and touch interactions.
+
 ### Administrator: editing and deleting requests
 
 The admin request table provides **Edit** and **Delete** actions for open requests. Editing pre-fills an HTML form with saved values. `validateTimeRange` checks the lesson times before submission; FastAPI also validates the payload. `PATCH /api/v1/requests/{id}` updates the record, and React then reloads the full list through `GET /requests/`. Deletion requires a `window.confirm` confirmation and sends `DELETE /api/v1/requests/{id}`; the API client handles HTTP 204 without parsing JSON.
