@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { apiRequest } from './api'
 
 /** Approval is protected by the backend's administrator-only role dependency. */
-export default function AdminTeacherApprovals({ token }) {
+export default function AdminTeacherApprovals({ token, onPendingCountChange }) {
   const [pending, setPending] = useState([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState(null)
@@ -12,11 +12,11 @@ export default function AdminTeacherApprovals({ token }) {
   useEffect(() => {
     let active = true
     apiRequest('/teachers/pending', { token })
-      .then((data) => { if (active) setPending(data) })
+      .then((data) => { if (active) { setPending(data); onPendingCountChange(data.length) } })
       .catch((err) => { if (active) setError(err.message) })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [token])
+  }, [token, onPendingCountChange])
 
   async function refresh() {
     setLoading(true)
@@ -24,6 +24,7 @@ export default function AdminTeacherApprovals({ token }) {
     try {
       const data = await apiRequest('/teachers/pending', { token })
       setPending(data)
+      onPendingCountChange(data.length)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -40,6 +41,7 @@ export default function AdminTeacherApprovals({ token }) {
       await apiRequest(`/teachers/${teacher.id}/approve`, { method: 'PATCH', token })
       const remaining = await apiRequest('/teachers/pending', { token })
       setPending(remaining)
+      onPendingCountChange(remaining.length)
       setNotice(`${teacher.full_name} wurde freigegeben und kann sich jetzt anmelden.`)
     } catch (err) {
       setError(err.message)
