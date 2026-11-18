@@ -65,7 +65,7 @@ Never store real passwords, JWTs or personal teacher documents in screenshots or
 | Make every table horizontally scrollable | Smallest code change | The request table's frequent actions remain difficult to read and use on phones |
 | CSS Grid, Flexbox and media queries | Native browser support, no new framework | **Selected:** matches existing code and the course's frontend concepts |
 
-**Trade-off:** The new card presentation requires a separate responsive stylesheet and `data-label` attributes. It avoids changing API behavior or replacing React components. A real mobile-browser usability review remains necessary; a Playwright viewport regression scenario has been added but is **not yet independently run or confirmed** at the time of this change.
+**Trade-off and evidence:** The new card presentation requires a separate responsive stylesheet and `data-label` attributes. It avoids changing API behavior or replacing React components. A Playwright viewport regression scenario was added and the team confirmed a successful local Windows run on **18 November 2026 (`2 passed`, including the existing application workflow test)**. A manual mobile-browser usability and keyboard/touch review is still needed; the automated result is not proof of full accessibility.
 
 **Course connection:** CSS box model, responsive layouts, Grid/Flexbox, media queries, semantic HTML, progressive enhancement and user-centred design. Verification should include a 1440 px desktop, 768 px tablet and 375 px mobile viewport, plus keyboard and touch interactions.
 
