@@ -1,0 +1,99 @@
+/* Native CSS is sufficient for this small course project: no UI framework required. */
+
+/* Keep keyboard navigation visible even when the table is horizontally scrollable. */
+:where(button, a, input, select, textarea, .table-scroll):focus-visible {
+  outline: 3px solid #5947ba;
+  outline-offset: 3px;
+}
+
+@media (max-width: 1000px) {
+  .main-column { min-width: 0; }
+  .card-heading { flex-wrap: wrap; }
+  .card-heading > div { min-width: 0; }
+  .decision-actions, .row-actions { flex-wrap: wrap; }
+  .table-scroll { max-width: 100%; }
+}
+
+@media (max-width: 720px) {
+  .content { padding-inline: 16px; }
+  .page-heading { width: 100%; }
+  .page-heading > .primary { width: 100%; }
+  .stats { grid-template-columns: 1fr; gap: 12px; }
+  .stat:last-child { grid-column: auto; }
+  .form-card, .table-card { min-width: 0; }
+  .request-form { gap: 16px; }
+  .request-form .time-row { flex-wrap: wrap; }
+  .form-actions { flex-wrap: wrap; }
+  .form-actions button { flex: 1 1 140px; }
+  .card-heading { align-items: flex-start; gap: 12px; }
+  .card-heading > .secondary { min-height: 44px; }
+  .topbar { padding-inline: 16px; }
+  .table-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+}
+
+/* Only the main request table becomes cards; other admin tables retain scrolling. */
+@media (max-width: 600px) {
+  .responsive-request-card .table-scroll { overflow: visible; }
+  .responsive-request-card table,
+  .responsive-request-card tbody,
+  .responsive-request-card tr,
+  .responsive-request-card td { display: block; width: 100%; }
+  /* Preserve column headers for assistive technology. */
+  .responsive-request-card thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .responsive-request-card tbody > tr:not(.edit-row) {
+    margin-bottom: 14px;
+    padding: 12px;
+    border: 1px solid #e5e8f1;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .responsive-request-card tbody > tr:not(.edit-row) td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 10px 2px;
+    border-bottom: 1px solid #f0f1f5;
+    text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .responsive-request-card tbody > tr:not(.edit-row) td:last-child { border-bottom: 0; }
+  .responsive-request-card tbody > tr:not(.edit-row) td::before {
+    content: attr(data-label);
+    flex: 0 0 76px;
+    font-size: .75rem;
+    font-weight: 800;
+    color: #526079;
+    text-align: left;
+  }
+  .responsive-request-card .row-actions { justify-content: flex-end; }
+  .responsive-request-card .edit-row td {
+    padding: 16px 12px;
+    background: #f6f4ff;
+    border-radius: 12px;
+    margin: -6px 0 16px;
+  }
+  .responsive-request-card .edit-form { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .responsive-request-card .edit-form .time-row { grid-column: 1; }
+  .responsive-request-card .edit-form input,
+  .responsive-request-card .edit-form select,
+  .responsive-request-card .edit-form textarea { min-width: 0; }
+}
+
+@media (max-width: 390px) {
+  .responsive-request-card tbody > tr:not(.edit-row) td::before { flex-basis: 65px; }
+  .form-card, .table-card { padding-inline: 12px; }
+  .topbar .ghost { padding-inline: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary, .secondary, .ghost, .icon-button { transition: none; }
+}
