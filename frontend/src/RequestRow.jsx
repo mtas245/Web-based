@@ -71,12 +71,12 @@ export default function RequestRow({ request, token, grades, subjects, subjectNa
   const statusLabel = { open: '● Offen', filled: '● Besetzt', closed: '● Geschlossen' }
   return <>
     <tr>
-      <td>{new Intl.DateTimeFormat('de-CH', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${request.date}T12:00:00`))}</td>
-      <td><span className="grade">{request.grade_level}</span></td>
-      <td>{subjectName(request.subject_id)}</td>
-      <td>{request.time_slot || '—'}</td>
-      <td><span className={`status ${request.status}`}>{statusLabel[request.status] || request.status}</span></td>
-      <td>
+      <td data-label="Datum">{new Intl.DateTimeFormat('de-CH', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${request.date}T12:00:00`))}</td>
+      <td data-label="Klasse"><span className="grade">{request.grade_level}</span></td>
+      <td data-label="Fach">{subjectName(request.subject_id)}</td>
+      <td data-label="Zeit">{request.time_slot || '—'}</td>
+      <td data-label="Status"><span className={`status ${request.status}`}>{statusLabel[request.status] || request.status}</span></td>
+      <td data-label="Aktionen">
         {request.status === 'open' ? <div className="row-actions">
           <button type="button" className="secondary small" disabled={busy} onClick={() => { setForm(initialValues(request)); setError(''); setEditing(!editing) }}>{editing ? 'Schliessen' : 'Bearbeiten'}</button>
           <button type="button" className="danger small" disabled={busy} onClick={remove}>Löschen</button>
