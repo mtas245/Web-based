@@ -104,3 +104,36 @@ test('Administrator dashboard adapts to desktop, tablet and mobile widths', asyn
   )
   expect(rowLayout).toBe('block')
 })
+
+test('Administrator task overview and request filters use saved API data', async ({ page }) => {
+  await signIn(page, 'admin@e2e.test', 'E2eAdmin123!')
+  await expect(page.getByRole('heading', { name: 'Das steht als Nächstes an' })).toBeVisible()
+
+  const formButton = page.getByRole('button', { name: /Neue Anfrage/ })
+  await formButton.click()
+  const form = page.locator('section.form-card form.request-form')
+  const lesson = new Date()
+  lesson.setDate(lesson.getDate() + 2)
+  const marker = `Filter-${Date.now()}`
+  await form.getByLabel('Datum').fill(lesson.toISOString().slice(0, 10))
+  await form.getByLabel('Klassenstufe').selectOption('3a')
+  await form.getByLabel('Fach').selectOption({ label: 'E2E Mathematik' })
+  await form.getByLabel('Bemerkung (optional)').fill(marker)
+  await form.getByRole('button', { name: /Anfrage erstellen/ }).click()
+  await expect(page.getByText('Stellvertretungsanfrage erfolgreich erstellt', { exact: false })).toBeVisible()
+
+  const filters = page.locator('.request-filters')
+  await filters.getByLabel('Suche').fill(marker)
+  await filters.getByLabel('Status').selectOption('open')
+  await filters.getByLabel('Klasse').selectOption('3a')
+  await expect(page.locator('#requests-list tbody tr').first()).toBeVisible()
+  await expect(filters.getByRole('status')).toContainText('1 von')
+
+  await filters.getByLabel('Suche').fill('no-such-subject-in-edusub')
+  await expect(page.getByText('Keine Anfragen passen zu den gewählten Filtern.')).toBeVisible()
+  await filters.getByRole('button', { name: 'Zurücksetzen' }).click()
+  await expect(filters.getByLabel('Suche')).toHaveValue('')
+
+  await page.getByRole('link', { name: /offene Einsätze in den nächsten 7 Tagen/ }).click()
+  await expect(page).toHaveURL(/#requests-list$/)
+})
