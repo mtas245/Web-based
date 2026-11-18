@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { apiRequest } from './api'
 
 /** Admin decisions are made by the API. This component only presents the workflow. */
-export default function AdminApplications({ token, requests, onRequestsChanged }) {
+export default function AdminApplications({ token, requests, onRequestsChanged, onPendingCountChange }) {
   const [applications, setApplications] = useState([])
   const [teachers, setTeachers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -16,6 +16,7 @@ export default function AdminApplications({ token, requests, onRequestsChanged }
       apiRequest('/teachers/', { token }),
     ])
     setApplications(pending)
+    onPendingCountChange(pending.length)
     setTeachers(teacherList)
   }
 
@@ -27,6 +28,7 @@ export default function AdminApplications({ token, requests, onRequestsChanged }
     ]).then(([pending, teacherList]) => {
       if (!cancelled) {
         setApplications(pending)
+        onPendingCountChange(pending.length)
         setTeachers(teacherList)
       }
     }).catch((err) => {
@@ -35,7 +37,7 @@ export default function AdminApplications({ token, requests, onRequestsChanged }
       if (!cancelled) setLoading(false)
     })
     return () => { cancelled = true }
-  }, [token])
+  }, [token, onPendingCountChange])
 
   const teacherName = (id) => teachers.find((teacher) => teacher.id === id)?.full_name ?? `Lehrperson #${id}`
   const requestLabel = (id) => {
@@ -76,7 +78,7 @@ export default function AdminApplications({ token, requests, onRequestsChanged }
     }
   }
 
-  return <section className="table-card" aria-label="Bewerbungsverwaltung">
+  return <section id="pending-applications" className="table-card" aria-label="Bewerbungsverwaltung">
     <div className="card-heading"><div><h2>Offene Bewerbungen <span className="teacher-count">{applications.length}</span></h2><p className="muted">Lehrpersonen auswählen, genehmigen oder ablehnen.</p></div><button className="secondary" disabled={loading || busyId !== null} onClick={refresh}>↻ Aktualisieren</button></div>
     {error && <p className="alert error" role="alert">{error}</p>}
     {notice && <p className="alert success" role="status">{notice}</p>}
