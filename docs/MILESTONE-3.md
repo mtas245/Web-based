@@ -1,5 +1,11 @@
 # Milestone 3 — Frontend/API integration (HS26)
 
+## Responsive admin UI: implementation and outstanding verification
+
+The initial responsive refinement uses CSS Grid/Flexbox and media queries without introducing Bootstrap or Tailwind. Statistics, forms and action controls adapt to smaller screens; on narrow phones the main request table is presented as labelled cards. Other admin tables remain horizontally scrollable. The table's column headers are retained for assistive technology and focus indicators remain visible. See [frontend decisions](FRONTEND-DECISIONS.md) for the alternatives and trade-offs.
+
+An additional Playwright viewport scenario covers 1440 px, 768 px and 375 px widths, including a populated request list. **The new responsive test has not yet been confirmed by a team member**, and the team still needs to conduct a manual keyboard/touch review on mobile. Do not confuse this with the previously confirmed application-workflow browser test.
+
 **Documentation language:** Interface action names in this document are given in English; the currently implemented UI still displays German labels. The documented API endpoints, status codes, and test results are unchanged.
 
 ## Latest extension: Admin CRUD through the web interface
