@@ -1,5 +1,19 @@
 # Milestone 3 — Frontend/API integration (HS26)
 
+## Administrator action center and request filters
+
+The administrator dashboard now includes a task-oriented overview showing open lessons scheduled within seven days, pending teacher applications and pending teacher-account approvals. These values come from existing API-backed lists; the overview links to the corresponding management sections. The request table also supports client-side searching and filtering by status and grade without introducing another endpoint.
+
+This is a deliberately small extension of the integrated workflow, not a complete calendar or notification system. The design alternatives, user-centred rationale and API trade-offs are recorded in [Frontend Decisions](FRONTEND-DECISIONS.md). New unit tests cover date selection and combined filters; a further Playwright scenario checks the UI. **Manual and browser-test confirmation of this new feature is still outstanding.**
+
+Suggested local checks:
+
+- [ ] Create an open request within the next seven days; see its grade, subject and date in the action center.
+- [ ] Apply as a teacher; after returning as administrator, check that the pending-application count reflects the saved application.
+- [ ] Use the three links to jump to the appropriate admin sections.
+- [ ] Search by subject or note, apply status/grade filters and reset them.
+- [ ] Confirm that filtering does not change the global dashboard statistics.
+
 ## Responsive admin UI: implementation and outstanding verification
 
 The initial responsive refinement uses CSS Grid/Flexbox and media queries without introducing Bootstrap or Tailwind. Statistics, forms and action controls adapt to smaller screens; on narrow phones the main request table is presented as labelled cards. Other admin tables remain horizontally scrollable. The table's column headers are retained for assistive technology and focus indicators remain visible. See [frontend decisions](FRONTEND-DECISIONS.md) for the alternatives and trade-offs.
