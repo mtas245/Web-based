@@ -178,3 +178,17 @@ EduSub now explicitly targets multiple primary schools rather than a single site
 - Additional automated frontend/API integration tests, mobile browser checks, and error-state review should follow.
 - Backend security issues noted in `MILESTONE-1-2.md` remain open. Do not use real credentials or confidential teacher documents in screenshots or demo recordings.
 - The project is currently on a fork branch. Coordinate merging into the group repository and make sure the lecturer has access to the committed Milestone 3 snapshot before coaching.
+
+
+### Multi-school manual integration and authorization tests — team report, 20 November 2026
+
+| Test | Expected | Team-reported result | Evidence |
+| --- | --- | --- | --- |
+| Wasgenring admin creates a substitute request | Request is saved under Wasgenring | **Passed** | Created in React and displayed in that school's overview. |
+| Volta admin opens their dashboard | Wasgenring request is absent | **Passed** | School-specific listing verified in the UI. |
+| Approved teacher browses available requests | Cross-school list and school filter work | **Passed** | Teacher verified the Wasgenring vacancy and the school selector in React. |
+| Volta admin PATCHes a Wasgenring request ID | HTTP 404; no cross-school update | **Passed** | Swagger returned **404 Request not found** for a valid partial update body. |
+
+**Additional API-validation observation (not an authorization result):** An initial Swagger PATCH attempt produced HTTP **422**, because the auto-generated body contained `"grade_level": "string"` and `"time_slot": "string"`. Those values violate the Pydantic grade-level and `HH:MM-HH:MM` validators. After sending only `{"note": "Unauthorized cross-school modification test"}`, the actual cross-school authorization check returned HTTP 404.
+
+**Evidence limits:** These are team-reported manual checks, not independently recorded browser traces. The 404 response is consistent with the backend authorization policy. The next manual test should verify that a Volta admin cannot approve a pending application for a Wasgenring vacancy, while the Wasgenring admin can approve it and the request transitions to `filled`. Do not enter real teacher details or passwords in evidence screenshots.
