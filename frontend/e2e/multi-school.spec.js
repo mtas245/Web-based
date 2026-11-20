@@ -5,6 +5,9 @@ async function signIn(page, email, password) {
   await page.getByLabel('E-Mail-Adresse').fill(email)
   await page.getByLabel('Passwort', { exact: true }).fill(password)
   await page.getByRole('button', { name: /Anmelden/ }).click()
+  // The login handler awaits the API response before writing to sessionStorage.
+  // A click is not proof that the asynchronous login has completed.
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('edusub_token'))).not.toBeNull()
 }
 
 async function signOut(page) {
