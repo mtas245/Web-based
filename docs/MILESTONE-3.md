@@ -204,3 +204,13 @@ EduSub now explicitly targets multiple primary schools rather than a single site
 | Request is retrieved after approval | Request status changes to `filled` | **Passed** |
 
 **Assessment relevance:** This demonstrates an integrated cross-school journey and a negative authorization case, connecting React, the documented FastAPI REST API, shared service/business rules and SQLModel persistence. The results were confirmed by a team member through the manual workflow; no independent network capture or browser automation run was provided for this session. The next priority is an automated regression test using distinct authenticated school administrators, followed by review of remaining usability and submission-readiness tasks.
+
+### Multi-school automated browser regression (20 November 2026)
+
+Added `frontend/e2e/multi-school.spec.js` and expanded the **disposable** E2E database fixture (`backend/tests/e2e_server.py`) to seed five school names, two separate school administrators and one approved teacher. All accounts, passwords and vacancies in this fixture are fictional and are not connected to production or the developer's `edusub.db`.
+
+The Playwright scenario now checks: Wasgenring vacancy creation in React; teacher school filtering and application; Volta's inability to list, update or approve Wasgenring records (`404`); Wasgenring's successful approval (`200`); the request's transition to `filled`; and the teacher's approved application status. The test uses actual authentication tokens from each UI login and discovers record IDs from API responses rather than hardcoding them.
+
+**Verification status:** The test file passed JavaScript syntax checking, the E2E server reached FastAPI startup, and all 17 backend unit/integration tests passed. Browser completion is **not yet confirmed** in the assistant's restricted environment. A group member must run the full Playwright suite locally and record the result before claiming the automated browser test passed.
+
+**Design rationale:** A disposable database and separate authenticated accounts make the security regression reproducible and protect existing test data. Direct API calls within the browser journey test authorization independently of frontend filtering, while React interactions demonstrate the real user-facing integration. This is complementary to FastAPI's faster TestClient security tests, not a replacement for them.
