@@ -192,3 +192,15 @@ EduSub now explicitly targets multiple primary schools rather than a single site
 **Additional API-validation observation (not an authorization result):** An initial Swagger PATCH attempt produced HTTP **422**, because the auto-generated body contained `"grade_level": "string"` and `"time_slot": "string"`. Those values violate the Pydantic grade-level and `HH:MM-HH:MM` validators. After sending only `{"note": "Unauthorized cross-school modification test"}`, the actual cross-school authorization check returned HTTP 404.
 
 **Evidence limits:** These are team-reported manual checks, not independently recorded browser traces. The 404 response is consistent with the backend authorization policy. The next manual test should verify that a Volta admin cannot approve a pending application for a Wasgenring vacancy, while the Wasgenring admin can approve it and the request transitions to `filled`. Do not enter real teacher details or passwords in evidence screenshots.
+
+
+### Cross-school application approval — team-confirmed manual test, 20 November 2026
+
+| Operation | Expected outcome | Team-reported result |
+| --- | --- | --- |
+| Approved teacher applies to an open Wasgenring request | Application is created; status `pending` | **Passed** |
+| Volta admin attempts to approve that Wasgenring application | API rejects cross-school approval with HTTP 404 | **Passed** |
+| Wasgenring admin approves the same pending application | API returns HTTP 200 | **Passed** |
+| Request is retrieved after approval | Request status changes to `filled` | **Passed** |
+
+**Assessment relevance:** This demonstrates an integrated cross-school journey and a negative authorization case, connecting React, the documented FastAPI REST API, shared service/business rules and SQLModel persistence. The results were confirmed by a team member through the manual workflow; no independent network capture or browser automation run was provided for this session. The next priority is an automated regression test using distinct authenticated school administrators, followed by review of remaining usability and submission-readiness tasks.
