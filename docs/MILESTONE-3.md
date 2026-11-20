@@ -166,6 +166,12 @@ Checked items reflect team-confirmed manual browser results; unchecked items rem
 
 ## Known limitations / next iteration
 
+### Cross-school extension (20 November 2026; code-level verification)
+
+EduSub now explicitly targets multiple primary schools rather than a single site. Five Basel school names are included in an idempotent demonstration seed script; **no real school is affiliated with this prototype**. A `School` entity, request ownership, legacy SQLite compatibility migration, school-admin request/application isolation, public teacher discovery across schools, a teacher school filter with five-item pagination, and a dedicated platform-admin teacher-approval view have been implemented. The architectural rationale and alternative options are recorded in [`MULTI-SCHOOL-ARCHITECTURE.md`](MULTI-SCHOOL-ARCHITECTURE.md).
+
+**Automated verification:** 17 backend Python tests passed, including cross-school access denial and legacy migration tests. Nine frontend Node tests passed; the frontend production build succeeded. These are development-environment results, not team-confirmed multi-account browser tests. **Pending:** manually demonstrate two separate school-admin accounts, cross-school teacher search/application, platform-wide teacher approval, and a fresh Playwright run. Existing database files should be backed up before starting the updated backend.
+
 - Teacher-facing screens for browsing and applying, as well as administrator approval in the UI, are pending.
 - Only the admin login/create/list journey is included here; edit/delete remain available through the API but are not yet available in this UI.
 - Authentication token is stored in browser `sessionStorage` for this local demo. Review storage strategy and additional security requirements before final submission.

@@ -81,6 +81,8 @@ class RequestUpdate(BaseModel):
 class RequestRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    school_id: int
+    school_name: Optional[str] = None
     date: DateType
     grade_level: str
     subject_id: int

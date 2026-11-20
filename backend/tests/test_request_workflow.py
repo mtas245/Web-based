@@ -7,8 +7,9 @@ from sqlmodel import SQLModel, Session, create_engine, select
 
 from main import app
 from database import get_db
-from core.dependencies import require_admin, require_teacher
+from core.dependencies import require_admin, require_teacher, require_platform_admin
 from models.user import User, Role
+from models.school import School
 from models.subject import Subject
 from models.request import SubstituteRequest, RequestStatus
 from models.application import Application, ApplicationStatus
@@ -20,9 +21,12 @@ def setup_api():
                            connect_args={"check_same_thread": False})
     SQLModel.metadata.create_all(engine)
     with Session(engine) as db:
+        school = School(name="Primarschule Volta")
+        db.add(school)
+        db.flush()
         users = [
             User(full_name="Admin", email="admin@demo.local", hashed_password="none",
-                 role=Role.ADMIN, is_approved=True),
+                 role=Role.ADMIN, school_id=school.id, is_approved=True),
             User(full_name="Teacher1", email="teacher1@demo.local", hashed_password="none",
                  role=Role.TEACHER, is_approved=True),
             User(full_name="Teacher2", email="teacher2@demo.local", hashed_password="none",
@@ -51,6 +55,7 @@ def setup_api():
 
     app.dependency_overrides[get_db] = get_test_db
     app.dependency_overrides[require_admin] = admin_role
+    app.dependency_overrides[require_platform_admin] = admin_role
     app.dependency_overrides[require_teacher] = teacher_role
     try:
         client = TestClient(app)

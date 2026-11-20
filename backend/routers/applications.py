@@ -17,7 +17,7 @@ def list_pending(
     db: Session = Depends(get_db),
 ):
     """Admin: list all pending applications."""
-    apps = request_service.get_pending_applications(db)
+    apps = request_service.get_pending_applications(db, _admin.school_id)
     return [_serialize(a) for a in apps]
 
 
@@ -28,7 +28,7 @@ def approve(
     db: Session = Depends(get_db),
 ):
     """Admin: approve an application (auto-rejects all others for same request)."""
-    app = request_service.approve_application(application_id, db)
+    app = request_service.approve_application(application_id, db, _admin.school_id)
     return _serialize(app)
 
 
@@ -39,7 +39,7 @@ def reject(
     db: Session = Depends(get_db),
 ):
     """Admin: reject an application."""
-    app = request_service.reject_application(application_id, db)
+    app = request_service.reject_application(application_id, db, _admin.school_id)
     return _serialize(app)
 
 

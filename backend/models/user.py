@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 class Role(str, Enum):
     ADMIN = "admin"
     TEACHER = "teacher"
+    PLATFORM_ADMIN = "platform_admin"
 
 
 class User(SQLModel, table=True):
@@ -20,6 +21,7 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True, index=True)
     hashed_password: str
     role: Role = Field(default=Role.TEACHER)
+    school_id: Optional[int] = Field(default=None, foreign_key="school.id")
     is_approved: bool = Field(default=False)
     phone: Optional[str] = None
     bio: Optional[str] = None

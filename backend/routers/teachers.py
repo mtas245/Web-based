@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlmodel import Session
 
 from database import get_db
-from core.dependencies import get_current_user, require_admin
+from core.dependencies import require_platform_admin
 from models.user import User
 from services import profile_service
 
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/teachers", tags=["teachers"])
 
 @router.get("/", response_model=List[dict])
 def list_teachers(
-    _admin: User = Depends(require_admin),
+    _admin: User = Depends(require_platform_admin),
     db: Session = Depends(get_db),
 ):
     """Admin: list all registered teachers."""
@@ -22,7 +22,7 @@ def list_teachers(
 
 @router.get("/pending", response_model=List[dict])
 def list_pending_teachers(
-    _admin: User = Depends(require_admin),
+    _admin: User = Depends(require_platform_admin),
     db: Session = Depends(get_db),
 ):
     """Admin: list teachers waiting for approval."""
@@ -32,7 +32,7 @@ def list_pending_teachers(
 @router.patch("/{teacher_id}/approve", response_model=dict)
 def approve_teacher(
     teacher_id: int,
-    _admin: User = Depends(require_admin),
+    _admin: User = Depends(require_platform_admin),
     db: Session = Depends(get_db),
 ):
     """Admin: approve a teacher account."""
@@ -43,7 +43,7 @@ def approve_teacher(
 @router.delete("/{teacher_id}/reject", status_code=204)
 def reject_teacher(
     teacher_id: int,
-    _admin: User = Depends(require_admin),
+    _admin: User = Depends(require_platform_admin),
     db: Session = Depends(get_db),
 ):
     """Admin: reject (delete) a teacher account."""
@@ -53,7 +53,7 @@ def reject_teacher(
 @router.get("/{teacher_id}", response_model=dict)
 def get_teacher_profile(
     teacher_id: int,
-    _admin: User = Depends(require_admin),
+    _admin: User = Depends(require_platform_admin),
     db: Session = Depends(get_db),
 ):
     """Admin: view a teacher's full profile."""

@@ -31,6 +31,7 @@ class SubstituteRequest(SQLModel, table=True):
     status: RequestStatus = Field(default=RequestStatus.OPEN)
     expires_at: Optional[datetime] = None
     created_by: int = Field(foreign_key="user.id")
+    school_id: Optional[int] = Field(default=None, foreign_key="school.id", index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     applications: List["Application"] = Relationship(back_populates="request")

@@ -4,7 +4,8 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 from database import create_db_and_tables
-from routers import auth, requests, applications, subjects, teachers, dashboard, profile
+from routers import auth, requests, applications, subjects, teachers, dashboard, profile, schools
+from models.school import School  # noqa: F401 - register SQLModel metadata
 
 app = FastAPI(
     title="EduSub API",
@@ -20,10 +21,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve uploaded files
+# Profile pictures may be displayed in the UI. Teacher qualification documents
+# are private and MUST NOT be exposed through StaticFiles.
 os.makedirs("uploads/documents", exist_ok=True)
 os.makedirs("uploads/profile_pictures", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/uploads/profile_pictures", StaticFiles(directory="uploads/profile_pictures"), name="profile_pictures")
 
 # Routers
 PREFIX = "/api/v1"
@@ -34,6 +36,7 @@ app.include_router(subjects.router,     prefix=PREFIX)
 app.include_router(teachers.router,     prefix=PREFIX)
 app.include_router(dashboard.router,    prefix=PREFIX)
 app.include_router(profile.router,      prefix=PREFIX)
+app.include_router(schools.router,      prefix=PREFIX)
 
 
 @app.on_event("startup")

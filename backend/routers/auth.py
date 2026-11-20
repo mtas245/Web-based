@@ -7,6 +7,7 @@ import os, shutil
 from database import get_db
 from core.dependencies import get_current_user
 from models.user import User
+from models.school import School
 from schemas.auth import RegisterRequest, RegisterResponse, TokenResponse, ChangePasswordRequest
 from services.auth_service import register_user, authenticate_user, change_password
 
@@ -83,13 +84,15 @@ def change_pwd(
 
 
 @router.get("/me")
-def get_me(current_user: User = Depends(get_current_user)):
+def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Return basic info about the currently logged-in user."""
     return {
         "id": current_user.id,
         "full_name": current_user.full_name,
         "email": current_user.email,
         "role": current_user.role,
+        "school_id": current_user.school_id,
+        "school_name": (school.name if current_user.school_id and (school := db.get(School, current_user.school_id)) else None),
         "is_approved": current_user.is_approved,
         "personal_number": current_user.personal_number,
     }

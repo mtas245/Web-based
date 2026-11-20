@@ -7,6 +7,7 @@ from sqlmodel import Session
 from database import get_db
 from core.dependencies import require_admin, require_teacher
 from models.user import User
+from models.school import School
 from models.request import GRADE_LEVELS
 from schemas.request import RequestCreate, RequestRead, RequestUpdate
 from services import request_service
@@ -16,10 +17,10 @@ router = APIRouter(prefix="/requests", tags=["requests"])
 
 @router.get("/", response_model=List[RequestRead])
 def list_all_requests(
-    _admin: User = Depends(require_admin), db: Session = Depends(get_db)
+    admin: User = Depends(require_admin), db: Session = Depends(get_db)
 ):
     """Admin: list all substitute requests."""
-    return request_service.get_all_requests(db)
+    return request_service.get_all_requests(db, admin.school_id)
 
 
 @router.post("/", response_model=RequestRead, status_code=201, responses={
@@ -36,7 +37,7 @@ def create_request(
     """Admin: create a substitute request from a documented JSON request body."""
     return request_service.create_request(
         payload.date, payload.grade_level, payload.subject_id,
-        payload.time_slot, payload.note, admin.id, db
+        payload.time_slot, payload.note, admin.id, db, admin.school_id
     )
 
 
@@ -51,8 +52,10 @@ def list_open_requests(
     if grade_level:
         if grade_level not in GRADE_LEVELS:
             raise HTTPException(status_code=422, detail="Invalid grade_level")
-        return [r for r in reqs if r.grade_level == grade_level]
-    return reqs
+        reqs = [r for r in reqs if r.grade_level == grade_level]
+    return [RequestRead.model_validate(r).model_copy(update={
+        "school_name": (school.name if (school := db.get(School, r.school_id)) else None)
+    }) for r in reqs]
 
 
 @router.get("/grade-levels", response_model=List[str])
@@ -66,7 +69,7 @@ def cleanup_expired(
     _admin: User = Depends(require_admin), db: Session = Depends(get_db)
 ):
     """Admin: remove expired open requests (legacy maintenance operation)."""
-    return {"deleted": request_service.delete_expired_requests(db)}
+    return {"deleted": request_service.delete_expired_requests(db, _admin.school_id)}
 
 
 @router.get("/{request_id}", response_model=RequestRead, responses={
@@ -78,7 +81,7 @@ def get_request(
     db: Session = Depends(get_db),
 ):
     """Admin: retrieve a single substitute request."""
-    return request_service.get_request(request_id, db)
+    return request_service.get_request(request_id, db, _admin.school_id)
 
 
 @router.patch("/{request_id}", response_model=RequestRead, responses={
@@ -93,7 +96,7 @@ def update_request(
     db: Session = Depends(get_db),
 ):
     """Admin: partially update an open substitute request."""
-    return request_service.update_request(request_id, payload.model_dump(exclude_unset=True), db)
+    return request_service.update_request(request_id, payload.model_dump(exclude_unset=True), db, _admin.school_id)
 
 
 @router.delete("/{request_id}", status_code=204, responses={
@@ -106,7 +109,7 @@ def delete_request(
     db: Session = Depends(get_db),
 ):
     """Admin: delete an open request that has no applications."""
-    request_service.delete_request(request_id, db)
+    request_service.delete_request(request_id, db, _admin.school_id)
 
 
 @router.patch("/{request_id}/close", response_model=RequestRead)
@@ -116,7 +119,7 @@ def close_request(
     db: Session = Depends(get_db),
 ):
     """Admin: close an open request."""
-    return request_service.close_request(request_id, db)
+    return request_service.close_request(request_id, db, _admin.school_id)
 
 
 @router.post("/{request_id}/apply", response_model=dict, status_code=201)

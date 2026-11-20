@@ -39,6 +39,7 @@ def create_request(
     note: Optional[str],
     created_by: int,
     db: Session,
+    school_id: int,
 ) -> SubstituteRequest:
     if grade_level not in GRADE_LEVELS:
         raise HTTPException(status_code=400, detail=f"Invalid grade level: {grade_level}")
@@ -55,6 +56,7 @@ def create_request(
         time_slot=time_slot,
         note=note,
         created_by=created_by,
+        school_id=school_id,
         expires_at=expires_at,
         status=RequestStatus.OPEN,
     )
@@ -64,8 +66,8 @@ def create_request(
     return req
 
 
-def get_all_requests(db: Session) -> List[SubstituteRequest]:
-    return db.exec(select(SubstituteRequest).order_by(SubstituteRequest.date)).all()
+def get_all_requests(db: Session, school_id: int) -> List[SubstituteRequest]:
+    return db.exec(select(SubstituteRequest).where(SubstituteRequest.school_id == school_id).order_by(SubstituteRequest.date)).all()
 
 
 def get_open_requests(db: Session) -> List[SubstituteRequest]:
@@ -89,10 +91,8 @@ def get_requests_by_grade(grade_level: str, db: Session) -> List[SubstituteReque
     ).all()
 
 
-def delete_request(request_id: int, db: Session) -> None:
-    req = db.get(SubstituteRequest, request_id)
-    if not req:
-        raise HTTPException(status_code=404, detail="Request not found")
+def delete_request(request_id: int, db: Session, school_id: int) -> None:
+    req = get_request(request_id, db, school_id)
     if req.status != RequestStatus.OPEN:
         raise HTTPException(status_code=409, detail="Only open requests may be deleted")
     if db.exec(select(Application).where(Application.request_id == request_id)).first():
@@ -101,10 +101,8 @@ def delete_request(request_id: int, db: Session) -> None:
     db.commit()
 
 
-def close_request(request_id: int, db: Session) -> SubstituteRequest:
-    req = db.get(SubstituteRequest, request_id)
-    if not req:
-        raise HTTPException(status_code=404, detail="Request not found")
+def close_request(request_id: int, db: Session, school_id: int) -> SubstituteRequest:
+    req = get_request(request_id, db, school_id)
     if req.status != RequestStatus.OPEN:
         raise HTTPException(status_code=409, detail="Only open requests may be closed")
     req.status = RequestStatus.CLOSED
@@ -114,11 +112,12 @@ def close_request(request_id: int, db: Session) -> SubstituteRequest:
     return req
 
 
-def delete_expired_requests(db: Session) -> int:
+def delete_expired_requests(db: Session, school_id: int) -> int:
     """Delete all OPEN requests that have passed their expires_at. Returns count deleted."""
     now = datetime.utcnow()
     expired = db.exec(
         select(SubstituteRequest)
+        .where(SubstituteRequest.school_id == school_id)
         .where(SubstituteRequest.status == RequestStatus.OPEN)
         .where(SubstituteRequest.expires_at != None)
         .where(SubstituteRequest.expires_at <= now)
@@ -155,19 +154,22 @@ def apply_for_request(request_id: int, teacher_id: int, db: Session) -> Applicat
     return app
 
 
-def get_pending_applications(db: Session) -> List[Application]:
+def get_pending_applications(db: Session, school_id: int) -> List[Application]:
     return db.exec(
-        select(Application).where(Application.status == ApplicationStatus.PENDING)
+        select(Application).join(SubstituteRequest)
+        .where(SubstituteRequest.school_id == school_id)
+        .where(Application.status == ApplicationStatus.PENDING)
     ).all()
 
 
-def approve_application(application_id: int, db: Session) -> Application:
+def approve_application(application_id: int, db: Session, school_id: int) -> Application:
     app = db.get(Application, application_id)
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
 
+    req = get_request(app.request_id, db, school_id)
+
     # Status transitions are guarded so a request cannot receive two approvals.
-    req = db.get(SubstituteRequest, app.request_id)
     if not req or req.status != RequestStatus.OPEN or app.status != ApplicationStatus.PENDING:
         raise HTTPException(status_code=409, detail="Application or request is no longer pending/open")
     app.status = ApplicationStatus.APPROVED
@@ -194,10 +196,11 @@ def approve_application(application_id: int, db: Session) -> Application:
     return app
 
 
-def reject_application(application_id: int, db: Session) -> Application:
+def reject_application(application_id: int, db: Session, school_id: int) -> Application:
     app = db.get(Application, application_id)
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
+    get_request(app.request_id, db, school_id)
     if app.status != ApplicationStatus.PENDING:
         raise HTTPException(status_code=409, detail="Only pending applications can be rejected")
     app.status = ApplicationStatus.REJECTED
@@ -221,17 +224,17 @@ def get_applications_for_teacher(teacher_id: int, db: Session) -> List[Applicati
     ).all()
 
 
-def get_request(request_id: int, db: Session) -> SubstituteRequest:
+def get_request(request_id: int, db: Session, school_id: int) -> SubstituteRequest:
     """Get a request for the authenticated admin; fail with HTTP 404."""
     req = db.get(SubstituteRequest, request_id)
-    if req is None:
+    if req is None or req.school_id != school_id:
         raise HTTPException(status_code=404, detail="Request not found")
     return req
 
 
-def update_request(request_id: int, updates: dict, db: Session) -> SubstituteRequest:
+def update_request(request_id: int, updates: dict, db: Session, school_id: int) -> SubstituteRequest:
     """Apply validated partial edits to an OPEN request."""
-    req = get_request(request_id, db)
+    req = get_request(request_id, db, school_id)
     if req.status != RequestStatus.OPEN:
         raise HTTPException(status_code=409, detail="Only open requests may be edited")
     if "subject_id" in updates:

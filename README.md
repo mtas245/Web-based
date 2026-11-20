@@ -110,7 +110,7 @@ Separately, a team member confirmed **19 successful manual Swagger endpoint chec
 
 ## Project overview
 
-**EduSub** is a browser-based substitute teacher coordination platform built for a single primary school covering Kindergarten (KG1, KG2) and Primary grades (1a–6b).
+**EduSub** is a cross-school substitute teacher coordination platform. Participating primary schools manage their own vacancies, while approved substitute teachers can discover and apply for open assignments across schools. The prototype covers Kindergarten (KG1, KG2) and Primary grades (1a–6b).
 
 The platform digitises the process of finding and assigning substitute teachers when a class cannot be covered by its regular teacher. It provides two role-specific portals (Admin and Teacher) each with dedicated functionality.
 
@@ -147,7 +147,7 @@ These are suggested starting responsibilities, not permanent silos. Discuss and 
 ### Scenario, users and goals
 
 - Situation or problem: Substitute assignments are coordinated through phone calls, WhatsApp groups and Excel sheets, causing gaps, missed assignments and a missing audit trail.
-- Intended users: School administrators and substitute teachers at one primary school, including KG1/KG2 and grades 1a–6b.
+- Intended users: Administrators of participating primary schools and substitute teachers seeking assignments across those schools, including KG1/KG2 and grades 1a–6b.
 - Proposed benefit: Structured coverage requests, teacher applications and administrative approval make assignments and their status visible.
 - Initial scope: The existing README describes the full planned feature set but does not select a first implementation workflow or explicitly defer features. W-02 → W-03 → W-04 below is a candidate already described in the draft; the team must confirm the initial scope after coaching.
 
@@ -611,7 +611,7 @@ EduSub builds on the group's NiceGUI monolith from Advanced Programming (SS26). 
 
 | Question / decision | Current position | Next step / person |
 |---|---|---|
-| Project idea | EduSub for a single school, KG and primary grades. | Confirm first implementation scope after coaching / TBD. |
+| Project idea | EduSub for multiple schools sharing a pool of substitute teachers, KG and primary grades. | Five Basel school names are used as fictional demonstration organisations; no affiliation is implied. |
 | Sketches | `wireframes.pdf` is planned, not supplied in the README. | Add sketches with screens, actions and feedback / TBD. |
 | First workflow and deferred features | Full story/workflow catalogue exists; first scope is not selected. | Confirm candidate W-02 → W-04 and identify what can wait / TBD. |
 | Team membership and allocation | Member A–C are placeholders. | Record actual members and confirm responsibilities / TBD. |

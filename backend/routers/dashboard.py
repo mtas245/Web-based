@@ -7,6 +7,7 @@ from database import get_db
 from core.dependencies import require_admin, require_teacher
 from models.user import User, Role
 from models.request import SubstituteRequest, RequestStatus
+from models.school import School
 from models.application import Application, ApplicationStatus
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
@@ -25,31 +26,34 @@ def admin_stats(
     """
     total_open = db.exec(
         select(func.count(SubstituteRequest.id))
+        .where(SubstituteRequest.school_id == _admin.school_id)
         .where(SubstituteRequest.status == RequestStatus.OPEN)
     ).one()
 
     total_filled = db.exec(
         select(func.count(SubstituteRequest.id))
+        .where(SubstituteRequest.school_id == _admin.school_id)
         .where(SubstituteRequest.status == RequestStatus.FILLED)
     ).one()
 
     total_closed = db.exec(
         select(func.count(SubstituteRequest.id))
+        .where(SubstituteRequest.school_id == _admin.school_id)
         .where(SubstituteRequest.status == RequestStatus.CLOSED)
     ).one()
 
     pending_applications = db.exec(
         select(func.count(Application.id))
+        .join(SubstituteRequest)
+        .where(SubstituteRequest.school_id == _admin.school_id)
         .where(Application.status == ApplicationStatus.PENDING)
     ).one()
 
-    pending_teachers = db.exec(
-        select(func.count(User.id))
-        .where(User.role == Role.TEACHER)
-        .where(User.is_approved == False)
-    ).one()
+    # Teacher approval is a platform responsibility, not a school-admin action.
+    pending_teachers = 0
 
     return {
+        "school_id": _admin.school_id,
         "requests": {
             "open": total_open,
             "filled": total_filled,

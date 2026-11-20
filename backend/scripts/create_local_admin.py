@@ -19,6 +19,7 @@ from sqlmodel import Session, select
 from main import app as _app  # noqa: F401
 from database import create_db_and_tables, engine
 from models.user import Role, User
+from models.school import School
 from core.security import hash_password
 
 
@@ -50,6 +51,23 @@ def main():
             print("A name is required.")
             sys.exit(1)
 
+        print("Administrator type: 1 = school administrator, 2 = platform administrator")
+        role_choice = input("Select type [1]: ").strip() or "1"
+        if role_choice not in {"1", "2"}:
+            sys.exit("Invalid administrator type")
+        school_id = None
+        role = Role.PLATFORM_ADMIN if role_choice == "2" else Role.ADMIN
+        if role == Role.ADMIN:
+            schools = session.exec(select(School).order_by(School.name)).all()
+            for school in schools:
+                print(f"{school.id}: {school.name}")
+            try:
+                school_id = int(input("School ID: "))
+            except ValueError:
+                sys.exit("Invalid school ID")
+            if not session.get(School, school_id):
+                sys.exit("School does not exist. Run seed_demo_schools.py first.")
+
         password = getpass("Password (minimum 12 characters): ")
         confirm = getpass("Confirm password: ")
         if len(password) < 12 or password != confirm:
@@ -63,7 +81,8 @@ def main():
             full_name=name,
             email=email,
             hashed_password=hash_password(password),
-            role=Role.ADMIN,
+            role=role,
+            school_id=school_id,
             is_approved=True,
         )
         session.add(admin)
