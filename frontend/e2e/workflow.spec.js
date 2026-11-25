@@ -72,7 +72,9 @@ test('Admin → Lehrperson → Bewerbung → Löschkonflikt → Genehmigung', as
 
   await page.getByRole('button', { name: /Abmelden/ }).click()
   await signIn(page, 'teacher@e2e.test', 'E2eTeacher123!')
-  await expect(page.getByText('● Genehmigt')).toBeVisible()
+  // Scope the assertion to this test's request; other applications may also be approved.
+  const ownApplicationRow = page.getByRole('row').filter({ has: page.getByRole('cell', { name: `#${request.id}`, exact: true }) })
+  await expect(ownApplicationRow.getByText('● Genehmigt')).toBeVisible()
   await expect(page.locator('.teacher-request').filter({ hasText: marker })).toHaveCount(0)
 })
 
