@@ -4,32 +4,23 @@ import { apiRequest } from './api'
 /** Admin decisions are made by the API. This component only presents the workflow. */
 export default function AdminApplications({ token, requests, onRequestsChanged, onPendingCountChange }) {
   const [applications, setApplications] = useState([])
-  const [teachers, setTeachers] = useState([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
 
   async function reload() {
-    const [pending, teacherList] = await Promise.all([
-      apiRequest('/applications/pending', { token }),
-      apiRequest('/teachers/', { token }),
-    ])
+    const pending = await apiRequest('/applications/pending', { token })
     setApplications(pending)
     onPendingCountChange(pending.length)
-    setTeachers(teacherList)
   }
 
   useEffect(() => {
     let cancelled = false
-    Promise.all([
-      apiRequest('/applications/pending', { token }),
-      apiRequest('/teachers/', { token }),
-    ]).then(([pending, teacherList]) => {
+    apiRequest('/applications/pending', { token }).then((pending) => {
       if (!cancelled) {
         setApplications(pending)
         onPendingCountChange(pending.length)
-        setTeachers(teacherList)
       }
     }).catch((err) => {
       if (!cancelled) setError(err.message)
@@ -39,7 +30,8 @@ export default function AdminApplications({ token, requests, onRequestsChanged, 
     return () => { cancelled = true }
   }, [token, onPendingCountChange])
 
-  const teacherName = (id) => teachers.find((teacher) => teacher.id === id)?.full_name ?? `Lehrperson #${id}`
+  // School admins may manage pending applications, but cannot list all teacher profiles.
+  const teacherName = (id) => `Lehrperson #${id}`
   const requestLabel = (id) => {
     const request = requests.find((item) => item.id === id)
     return request ? `${request.grade_level} · ${request.date}` : `Anfrage #${id}`
